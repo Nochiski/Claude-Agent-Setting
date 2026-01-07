@@ -168,6 +168,31 @@ Task(subagent_type="frontend-designer", prompt=f"Based on plan: {result}...")
 - 출처: [링크]
 ```
 
+## Version Impact Rule (버전 영향 규칙)
+
+**모든 코드 변경 제안 시 버전 영향을 판단하고 제시:**
+
+### 판단 기준
+| 변경 유형 | 버전 | 예시 |
+|----------|------|------|
+| 버그 수정, 내부 리팩토링 | patch (0.0.1) | 로직 수정, 성능 개선 |
+| 새 기능, API/옵션 추가 | minor (0.1.0) | 엔드포인트 추가 |
+| Breaking change | major (1.0.0) | API 삭제, 시그니처 변경 |
+
+### 출력 형식
+```markdown
+### 버전 영향
+- 권장: patch/minor/major (0.0.1)
+- 근거: [판단 이유]
+
+### CHANGELOG 제안 (API/동작/설정 변경시)
+- Added/Changed/Fixed/Removed: [설명]
+```
+
+### 규칙
+- 프로젝트에 버전 파일(pyproject.toml, package.json 등)이 있으면 그 방식 우선
+- API/동작/설정 변경 시 CHANGELOG 업데이트 제안 필수
+
 ## Important
 
 - Delegate proactively without being asked

@@ -109,6 +109,31 @@ describe('기능/모듈명', () => {
 ✅ 모든 테스트 통과 / ❌ N개 실패
 ```
 
+## 언어별 테스트 규칙
+
+### Python
+- 외부 Device(TCP/Serial) 통신 테스트는 항상 Mock 처리 (실장치 의존 금지)
+- 타입 힌트 포함한 테스트 코드 작성
+- Pydantic/dataclass로 테스트 데이터 명확히 정의
+
+### JavaScript/TypeScript
+- any 타입 금지 (테스트 코드에서도)
+- 에러/로딩/빈 상태 테스트 포함
+
+### 테스트 분류
+| 폴더 | 용도 | CI |
+|------|------|-----|
+| `tests/ci/` or `__tests__/` | Mock 기반, 외부 의존성 없음 | O |
+| `tests/manual/` or `tests/e2e/` | 실제 환경/하드웨어 필요 | X |
+
+### 검증 명령어
+```bash
+# 검증 방법 항상 포함
+npm test            # Node.js
+pytest              # Python
+go test ./...       # Go
+```
+
 ## 원칙
 
 - 테스트는 문서다 (의도를 명확히)

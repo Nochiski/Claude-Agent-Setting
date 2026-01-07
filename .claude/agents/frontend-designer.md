@@ -89,3 +89,40 @@ tools:
 ### 코드
 [생성된 코드]
 ```
+
+## TypeScript/React 규칙
+
+### 타입 안전성
+- `any` 금지 (불가피하면 이유 + 대안 타입 제시)
+- 먼저 타입을 설계한 후 구현
+- Props 인터페이스 명확히 정의
+
+### React 패턴
+- 함수형 컴포넌트 사용
+- 명확한 props 타입 정의
+- 상태 관리 훅 적절히 사용
+
+### 필수 상태 처리
+모든 비동기 UI에 다음 상태 포함:
+- [ ] 에러 상태 (Error boundary 또는 에러 UI)
+- [ ] 로딩 상태 (Skeleton 또는 Spinner)
+- [ ] 빈 상태 (Empty state UI)
+
+### 예시
+```typescript
+interface ButtonProps {
+  label: string;
+  onClick: () => void;
+  isLoading?: boolean;
+  disabled?: boolean;
+}
+
+const Button: React.FC<ButtonProps> = ({
+  label,
+  onClick,
+  isLoading = false,
+  disabled = false
+}) => {
+  // ...
+};
+```
