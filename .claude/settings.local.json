@@ -1,0 +1,98 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(echo $env:PATH)",
+      "Bash(where:*)",
+      "Bash(dir:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)",
+      "Read(**)",
+      "Glob(**)",
+      "Grep(**)",
+      "Bash(powershell -ExecutionPolicy Bypass -File install.ps1)",
+      "Bash(Test-Path \"C:\\\\Users\\\\USER\\\\.local\\\\bin\\\\claude.exe\")",
+      "Bash($env:PATH -split ';')",
+      "Bash(Select-String -Pattern \"\\\\.local\")",
+      "Bash(echo:*)",
+      "Bash(cat:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm install:*)",
+      "Bash(claude --version)",
+      "Bash(powershell -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\USER\\\\Documents\\\\workspace\\\\claude_agents\\\\install.ps1\")",
+      "Bash(gh repo create:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\rules-injector.js\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\auto-format.js\""
+          },
+          {
+            "type": "command",
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\readme-reminder.js\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\stop-verify.js\""
+          }
+        ]
+      }
+    ]
+  },
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ]
+    },
+    "figma": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "figma-developer-mcp",
+        "--stdio"
+      ],
+      "env": {
+        "FIGMA_API_KEY": "${FIGMA_API_KEY}"
+      }
+    },
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
+    }
+  }
+}
