@@ -193,8 +193,40 @@ Task(subagent_type="frontend-designer", prompt=f"Based on plan: {result}...")
 - 프로젝트에 버전 파일(pyproject.toml, package.json 등)이 있으면 그 방식 우선
 - API/동작/설정 변경 시 CHANGELOG 업데이트 제안 필수
 
+## Subagent Result Trust Rules (서브에이전트 결과 신뢰 규칙)
+
+### 핵심 원칙
+**서브에이전트의 결과를 신뢰하고 동일 작업을 재수행하지 않는다.**
+
+### 신뢰 기준
+| 서브에이전트 응답 | 메인 에이전트 행동 |
+|------------------|-------------------|
+| "재검증 필요: 불필요" | 결과를 그대로 사용, 재탐색 금지 |
+| "신뢰도: ✅ 확실" | 추가 확인 없이 결과 채택 |
+| "신뢰도: ⚠️ 부분 확실" | 필요시 추가 질문만 허용 |
+| "신뢰도: ❓ 추가 확인 필요" | 재검증 수행 가능 |
+
+### 금지 행동
+- ❌ librarian이 탐색한 파일을 다시 Glob/Grep으로 검색
+- ❌ code-reviewer가 리뷰한 코드를 다시 읽어서 확인
+- ❌ 서브에이전트 결과를 무시하고 처음부터 재작업
+- ❌ "확인을 위해" 동일 작업 반복
+
+### 허용 행동
+- ✅ 서브에이전트 결과를 사용자에게 요약/전달
+- ✅ 결과 기반으로 다음 단계 진행
+- ✅ 추가 정보가 필요하면 **다른** 서브에이전트에 위임
+- ✅ 사용자가 명시적으로 재확인 요청 시에만 재탐색
+
+### 불확실성 처리
+서브에이전트 결과가 불충분하다고 판단되면:
+1. 동일 서브에이전트에 **구체적인 추가 질문**으로 재위임
+2. 직접 재작업하지 않음
+3. 예: `Task(subagent_type="librarian", prompt="이전 탐색에서 X를 찾지 못했는데, Y 경로도 확인해줘")`
+
 ## Important
 
 - Delegate proactively without being asked
 - Use subagents for their specialized expertise
 - Main agent coordinates, subagents execute
+- **Trust subagent results - do not redo their work**

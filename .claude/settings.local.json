@@ -27,10 +27,23 @@
       "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit: Claude Code Agents 자동 설정 도구\n\n- 9개 서브에이전트 \\(oracle, planner, code-reviewer, frontend-designer, librarian, debugger, test-writer, refactorer, formatter\\)\n- 3개 MCP 서버 \\(Context7, Figma, GitHub\\)\n- 5개 자동화 훅 \\(rules-injector, auto-format, readme-reminder, stop-verify, comment-checker\\)\n- Windows/Unix 설치 스크립트\n- README 자동 주입 기능\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(winget install:*)",
       "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" auth status)",
-      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" repo create claude-agents --public --description \"Claude Code 서브에이전트 자동 설정 도구 \\(9개 에이전트, 3개 MCP, 5개 훅\\)\" --source=. --remote=origin --push)"
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" repo create claude-agents --public --description \"Claude Code 서브에이전트 자동 설정 도구 \\(9개 에이전트, 3개 MCP, 5개 훅\\)\" --source=. --remote=origin --push)",
+      "WebFetch(domain:www.linkedin.com)",
+      "Bash(del \"C:\\\\Users\\\\USER\\\\.claude\\\\hooks\\\\todo-continuation-enforcer.js\")"
     ]
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\pre-commit-test.js\""
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "hooks": [
@@ -52,6 +65,32 @@
           {
             "type": "command",
             "command": "node \"%USERPROFILE%\\.claude\\hooks\\readme-reminder.js\""
+          },
+          {
+            "type": "command",
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\edit-error-recovery.js\""
+          }
+        ]
+      },
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\empty-task-response-detector.js\""
+          }
+        ]
+      },
+      {
+        "matcher": "Glob|Grep|Read|Edit|Write|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\context-window-monitor.js\""
+          },
+          {
+            "type": "command",
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\agent-usage-reminder.js\""
           }
         ]
       }
@@ -62,6 +101,10 @@
           {
             "type": "command",
             "command": "node \"%USERPROFILE%\\.claude\\hooks\\stop-verify.js\""
+          },
+          {
+            "type": "command",
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\ralph-loop.js\""
           }
         ]
       }
