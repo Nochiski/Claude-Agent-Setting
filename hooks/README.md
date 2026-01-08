@@ -91,6 +91,61 @@ export BUILD_COMMAND="npm run build"
 
 AI가 과도한 주석을 추가하지 않도록 검사
 
+### 6. 커밋 전 테스트 (pre-commit-test.js)
+**이벤트**: PreToolUse (Bash)
+
+git commit 명령 실행 전 테스트 자동 실행
+
+### 7. Edit 에러 복구 (edit-error-recovery.js)
+**이벤트**: PostToolUse (Edit)
+
+Edit 도구 에러 발생 시 복구 힌트 제공
+
+### 8. 빈 Task 응답 감지 (empty-task-response-detector.js)
+**이벤트**: PostToolUse (Task)
+
+서브에이전트가 빈 응답을 반환하면 경고
+
+### 9. 컨텍스트 윈도우 모니터 (context-window-monitor.js)
+**이벤트**: PostToolUse
+
+토큰 사용량을 추적하고 임계값 도달 시 알림
+
+### 10. 에이전트 사용 리마인더 (agent-usage-reminder.js)
+**이벤트**: PostToolUse
+
+반복적인 탐색 작업 시 에이전트 위임 리마인드
+
+### 11. Pipeline Tracker (pipeline-tracker.js) ⭐
+**이벤트**: PostToolUse (Edit, Write, Task)
+
+코드 파일 수정을 추적하고 파이프라인 에이전트 실행 상태를 기록
+
+추적 대상:
+- Edit/Write로 코드 파일(.js, .ts, .py 등) 수정 → `codeModified: true`
+- Task로 code-reviewer, test-writer, formatter 실행 → 해당 단계 완료
+
+### 12. Pipeline Enforcer (pipeline-enforcer.js) ⭐
+**이벤트**: Stop
+
+코드가 수정되었으나 파이프라인이 완료되지 않으면 세션 종료 차단
+
+```bash
+# 건너뛰기 (비권장)
+set PIPELINE_SKIP=true
+```
+
+### 13. Ralph Loop (ralph-loop.js) ⭐
+**이벤트**: Stop
+
+Todo가 완료될 때까지 세션 종료를 차단하여 자동 반복 실행
+
+```bash
+# 활성화
+set RALPH_ENABLED=true
+set RALPH_MAX_ITERATIONS=20
+```
+
 ## 훅 작성 규칙
 
 1. 훅은 stdin으로 JSON 데이터를 받음

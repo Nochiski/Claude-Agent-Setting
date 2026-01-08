@@ -2,7 +2,7 @@
 
 Automatic setup tool for Claude Code subagents.
 
-Applies **10 subagents**, **MCP servers**, and **11 automation hooks** to your local Claude Code environment.
+Applies **10 subagents**, **MCP servers**, and **13 automation hooks** to your local Claude Code environment.
 
 [한국어 README](./README.ko.md)
 
@@ -82,7 +82,7 @@ export GITHUB_PERSONAL_ACCESS_TOKEN=$(gh auth token)
 export FIGMA_API_KEY="your-figma-api-key"
 ```
 
-## Hooks (11)
+## Hooks (13)
 
 | Hook | Event | Function |
 |------|-------|----------|
@@ -94,9 +94,26 @@ export FIGMA_API_KEY="your-figma-api-key"
 | `empty-task-response-detector.js` | PostToolUse | Detect empty subagent responses |
 | `context-window-monitor.js` | PostToolUse | Context usage monitoring |
 | `agent-usage-reminder.js` | PostToolUse | Agent delegation reminder |
+| `pipeline-tracker.js` | PostToolUse | **Track code modifications for pipeline** |
+| `pipeline-enforcer.js` | Stop | **Block exit if pipeline incomplete** |
 | `stop-verify.js` | Stop | Verification on session end |
 | `ralph-loop.js` | Stop | **Auto-loop execution (Ralph Wiggum)** |
 | `comment-checker.js` | PostToolUse | Prevent excessive comments |
+
+### Pipeline Enforcement
+`pipeline-tracker.js` + `pipeline-enforcer.js` enforce the mandatory code review pipeline.
+
+When you modify code files (.js, .ts, .py, etc.), the hooks track this and require you to run:
+1. `code-reviewer` - Review for bugs/security
+2. `test-writer` - Verify/write tests
+3. `formatter` - Clean up code style
+
+Session termination is blocked until all pipeline steps are complete.
+
+```bash
+# Skip pipeline enforcement (not recommended)
+set PIPELINE_SKIP=true
+```
 
 ### Ralph Loop (Auto-Loop Execution)
 `ralph-loop.js` blocks session termination until todos are complete, automatically continuing work.

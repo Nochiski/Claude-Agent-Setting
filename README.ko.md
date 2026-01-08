@@ -2,7 +2,7 @@
 
 Claude Code 서브에이전트 자동 설정 도구
 
-로컬 Claude Code 환경에 **10개 서브에이전트**, **MCP 서버**, **11개 자동화 훅**을 일괄 적용합니다.
+로컬 Claude Code 환경에 **10개 서브에이전트**, **MCP 서버**, **13개 자동화 훅**을 일괄 적용합니다.
 
 ## 빠른 설치
 
@@ -80,7 +80,7 @@ export GITHUB_PERSONAL_ACCESS_TOKEN=$(gh auth token)
 export FIGMA_API_KEY="your-figma-api-key"
 ```
 
-## Hooks (11개)
+## Hooks (13개)
 
 | 훅 | 이벤트 | 기능 |
 |----|--------|------|
@@ -92,9 +92,26 @@ export FIGMA_API_KEY="your-figma-api-key"
 | `empty-task-response-detector.js` | PostToolUse | 서브에이전트 빈 응답 감지 |
 | `context-window-monitor.js` | PostToolUse | 컨텍스트 사용량 모니터링 |
 | `agent-usage-reminder.js` | PostToolUse | 에이전트 위임 리마인드 |
+| `pipeline-tracker.js` | PostToolUse | **코드 수정 파이프라인 추적** |
+| `pipeline-enforcer.js` | Stop | **파이프라인 미완료 시 종료 차단** |
 | `stop-verify.js` | Stop | 세션 종료 시 검증 |
 | `ralph-loop.js` | Stop | **자동 반복 실행 (Ralph Wiggum)** |
 | `comment-checker.js` | PostToolUse | 과도한 주석 방지 |
+
+### Pipeline Enforcement (파이프라인 강제)
+`pipeline-tracker.js` + `pipeline-enforcer.js`가 필수 코드 리뷰 파이프라인을 강제합니다.
+
+코드 파일(.js, .ts, .py 등)을 수정하면 훅이 이를 추적하고 다음 실행을 요구합니다:
+1. `code-reviewer` - 버그/보안 리뷰
+2. `test-writer` - 테스트 확인/작성
+3. `formatter` - 코드 스타일 정리
+
+모든 파이프라인 단계가 완료될 때까지 세션 종료가 차단됩니다.
+
+```bash
+# 파이프라인 강제 건너뛰기 (비권장)
+set PIPELINE_SKIP=true
+```
 
 ### Ralph Loop (자동 반복 실행)
 `ralph-loop.js`는 Todo가 완료될 때까지 세션 종료를 차단하여 자동으로 작업을 계속합니다.

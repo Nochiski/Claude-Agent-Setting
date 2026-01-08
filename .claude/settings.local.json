@@ -84,6 +84,15 @@
         ]
       },
       {
+        "matcher": "Edit|Write|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\pipeline-tracker.js\""
+          }
+        ]
+      },
+      {
         "matcher": "Glob|Grep|Read|Edit|Write|Task",
         "hooks": [
           {
@@ -100,6 +109,10 @@
     "Stop": [
       {
         "hooks": [
+          {
+            "type": "command",
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\pipeline-enforcer.js\""
+          },
           {
             "type": "command",
             "command": "node \"%USERPROFILE%\\.claude\\hooks\\stop-verify.js\""
