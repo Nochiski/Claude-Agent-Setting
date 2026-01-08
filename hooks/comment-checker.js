@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Comment Checker Hook
- * Edit 도구 사용 후 과도한 주석이 추가되지 않았는지 검사
+ * Checks if excessive comments were added after Edit tool usage
  */
 
 const readline = require('readline');
@@ -22,7 +22,7 @@ async function main() {
   try {
     const data = JSON.parse(input);
 
-    // Edit 도구의 new_string에서 주석 비율 체크
+    // Check comment ratio in Edit tool's new_string
     if (data.tool_input && data.tool_input.new_string) {
       const content = data.tool_input.new_string;
       const lines = content.split('\n');
@@ -41,7 +41,7 @@ async function main() {
       }
     }
 
-    // 데이터 그대로 반환 (차단하지 않음)
+    // Return data as-is (no blocking)
     console.log(JSON.stringify(data));
   } catch (e) {
     console.error('Hook error:', e.message);

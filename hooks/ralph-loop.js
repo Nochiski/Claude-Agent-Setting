@@ -1,21 +1,21 @@
 #!/usr/bin/env node
 /**
  * Ralph Loop Hook (Ralph Wiggum Style)
- * Stop 이벤트에서 완료 조건을 확인하고, 미완료 시 세션 종료를 차단하여 자동 반복 실행
+ * Checks completion conditions on Stop event, blocks session termination if incomplete for auto-loop execution
  *
- * 사용법:
- * 1. 프롬프트에 완료 마커 포함: "<promise>COMPLETE</promise>" 또는 "TASK_COMPLETE"
- * 2. Claude가 완료 마커를 출력할 때까지 자동으로 계속 실행
+ * Usage:
+ * 1. Include completion marker in prompt: "<promise>COMPLETE</promise>" or "TASK_COMPLETE"
+ * 2. Automatically continues until Claude outputs the completion marker
  *
- * 환경변수:
- * - RALPH_ENABLED=true: Ralph Loop 활성화 (기본: false)
- * - RALPH_MAX_ITERATIONS=20: 최대 반복 횟수 (기본: 20)
- * - RALPH_COMPLETION_MARKER=COMPLETE: 완료 마커 (기본: COMPLETE)
- * - RALPH_PROMPT: 재주입할 프롬프트 (설정 시 매 반복마다 이 프롬프트 사용)
+ * Environment variables:
+ * - RALPH_ENABLED=true: Enable Ralph Loop (default: false)
+ * - RALPH_MAX_ITERATIONS=20: Maximum iterations (default: 20)
+ * - RALPH_COMPLETION_MARKER=COMPLETE: Completion marker (default: COMPLETE)
+ * - RALPH_PROMPT: Prompt to re-inject (if set, uses this prompt for each iteration)
  *
- * 주의:
- * - 비용이 빠르게 증가할 수 있으므로 MAX_ITERATIONS 설정 필수
- * - 명확한 완료 조건이 있는 작업에만 사용
+ * Warning:
+ * - Costs can increase rapidly, so MAX_ITERATIONS setting is essential
+ * - Only use for tasks with clear completion conditions
  */
 
 const readline = require('readline');
@@ -30,51 +30,51 @@ const CONFIG = {
   stateFile: path.join(process.env.USERPROFILE || process.env.HOME, '.claude', 'ralph-state.json')
 };
 
-// 완료 패턴들 (텍스트 마커)
+// Completion patterns (text markers)
 const COMPLETION_PATTERNS = [
   /<promise>[\s\S]*?COMPLETE[\s\S]*?<\/promise>/i,
   /TASK_COMPLETE/,
   /\[COMPLETE\]/,
-  /작업\s*완료/,
-  /모든\s*작업.*완료/
+  /task\s*complete/i,
+  /all\s*tasks.*complete/i
 ];
 
-// Todo 상태 기반 완료 체크
+// Todo status-based completion check
 function checkTodoCompletion(content) {
-  // in_progress 또는 pending 상태가 있으면 미완료
+  // Incomplete if in_progress or pending status exists
   const inProgressCount = (content.match(/"status"\s*:\s*"in_progress"/g) || []).length;
   const pendingCount = (content.match(/"status"\s*:\s*"pending"/g) || []).length;
   const completedCount = (content.match(/"status"\s*:\s*"completed"/g) || []).length;
 
-  // Todo가 하나라도 있고, 모두 completed면 완료
+  // Complete if at least one todo exists and all are completed
   if (completedCount > 0 && inProgressCount === 0 && pendingCount === 0) {
-    return { complete: true, reason: `Todo 전체 완료 (${completedCount}개)` };
+    return { complete: true, reason: `All todos complete (${completedCount})` };
   }
 
-  // Todo가 있지만 미완료 항목 존재
+  // Todos exist but incomplete items present
   if (completedCount > 0 || inProgressCount > 0 || pendingCount > 0) {
     return {
       complete: false,
-      reason: `Todo 미완료 - completed: ${completedCount}, in_progress: ${inProgressCount}, pending: ${pendingCount}`
+      reason: `Todos incomplete - completed: ${completedCount}, in_progress: ${inProgressCount}, pending: ${pendingCount}`
     };
   }
 
-  // Todo 없음 - 텍스트 마커로 판단
-  return { complete: false, reason: 'Todo 없음, 텍스트 마커로 판단' };
+  // No todos - determine by text markers
+  return { complete: false, reason: 'No todos, checking text markers' };
 }
 
 function loadState() {
   try {
     if (fs.existsSync(CONFIG.stateFile)) {
       const state = JSON.parse(fs.readFileSync(CONFIG.stateFile, 'utf8'));
-      // 1시간 이상 경과 시 리셋
+      // Reset if more than 1 hour elapsed
       if (Date.now() - state.startTime > 60 * 60 * 1000) {
         return { iterations: 0, startTime: Date.now() };
       }
       return state;
     }
   } catch (e) {
-    // 무시
+    // ignore
   }
   return { iterations: 0, startTime: Date.now() };
 }
@@ -83,7 +83,7 @@ function saveState(state) {
   try {
     fs.writeFileSync(CONFIG.stateFile, JSON.stringify(state, null, 2));
   } catch (e) {
-    // 무시
+    // ignore
   }
 }
 
@@ -93,35 +93,35 @@ function resetState() {
       fs.unlinkSync(CONFIG.stateFile);
     }
   } catch (e) {
-    // 무시
+    // ignore
   }
 }
 
 function checkCompletion(data) {
   const content = JSON.stringify(data);
 
-  // 1. Todo 상태 기반 체크 (우선)
+  // 1. Todo status-based check (priority)
   const todoResult = checkTodoCompletion(content);
   if (todoResult.complete) {
-    console.error(`   완료 감지: ${todoResult.reason}`);
+    console.error(`   Completion detected: ${todoResult.reason}`);
     return true;
   }
 
-  // 2. 커스텀 마커 체크
+  // 2. Custom marker check
   if (content.includes(CONFIG.completionMarker)) {
-    console.error(`   완료 감지: 커스텀 마커 "${CONFIG.completionMarker}"`);
+    console.error(`   Completion detected: Custom marker "${CONFIG.completionMarker}"`);
     return true;
   }
 
-  // 3. 기본 완료 패턴 체크
+  // 3. Default completion pattern check
   const patternMatch = COMPLETION_PATTERNS.some(pattern => pattern.test(content));
   if (patternMatch) {
-    console.error('   완료 감지: 텍스트 패턴 매칭');
+    console.error('   Completion detected: Text pattern match');
     return true;
   }
 
-  // 미완료 상태 로깅
-  if (todoResult.reason !== 'Todo 없음, 텍스트 마커로 판단') {
+  // Log incomplete status
+  if (todoResult.reason !== 'No todos, checking text markers') {
     console.error(`   ${todoResult.reason}`);
   }
 
@@ -134,7 +134,7 @@ function readTranscript(transcriptPath) {
       return fs.readFileSync(transcriptPath, 'utf8');
     }
   } catch (e) {
-    // 무시
+    // ignore
   }
   return '';
 }
@@ -154,15 +154,15 @@ async function main() {
   try {
     const data = JSON.parse(input);
 
-    // Ralph Loop 비활성화 시 패스스루
+    // Pass through when Ralph Loop is disabled
     if (!CONFIG.enabled) {
       console.log(JSON.stringify(data));
       return;
     }
 
-    // stop_hook_active 확인 (무한 루프 방지)
+    // Check stop_hook_active (prevent infinite loop)
     if (data.stop_hook_active) {
-      console.error('\n⚠️  [RALPH LOOP] stop_hook_active 감지 - 무한 루프 방지를 위해 종료 허용\n');
+      console.error('\n⚠️  [RALPH LOOP] stop_hook_active detected - allowing termination to prevent infinite loop\n');
       resetState();
       console.log(JSON.stringify(data));
       process.exit(0);
@@ -171,51 +171,51 @@ async function main() {
 
     const state = loadState();
 
-    // Transcript에서도 완료 확인
+    // Also check completion in transcript
     const transcript = readTranscript(data.transcript_path);
     const isComplete = checkCompletion(data) ||
                        (transcript && checkCompletion({ transcript }));
 
     if (isComplete) {
-      console.error(`\n✅ [RALPH LOOP] 완료 마커 감지! (${state.iterations}회 반복 후 완료)`);
-      console.error('   세션 정상 종료를 허용합니다.\n');
+      console.error(`\n✅ [RALPH LOOP] Completion marker detected! (completed after ${state.iterations} iterations)`);
+      console.error('   Allowing normal session termination.\n');
       resetState();
       console.log(JSON.stringify(data));
       process.exit(0);
       return;
     }
 
-    // 최대 반복 횟수 체크
+    // Check maximum iterations
     if (state.iterations >= CONFIG.maxIterations) {
-      console.error(`\n⚠️  [RALPH LOOP] 최대 반복 횟수(${CONFIG.maxIterations}) 도달`);
-      console.error('   완료 마커를 찾지 못했지만 종료합니다.');
-      console.error('   RALPH_MAX_ITERATIONS 환경변수로 조정 가능합니다.\n');
+      console.error(`\n⚠️  [RALPH LOOP] Maximum iterations (${CONFIG.maxIterations}) reached`);
+      console.error('   Completion marker not found, but terminating.');
+      console.error('   Adjust with RALPH_MAX_ITERATIONS environment variable.\n');
       resetState();
       console.log(JSON.stringify(data));
       process.exit(0);
       return;
     }
 
-    // 반복 계속
+    // Continue iteration
     state.iterations++;
     saveState(state);
 
-    console.error(`\n🔄 [RALPH LOOP] 반복 ${state.iterations}/${CONFIG.maxIterations}`);
-    console.error(`   완료 마커 "${CONFIG.completionMarker}"를 찾지 못했습니다.`);
-    console.error('   작업을 계속합니다...\n');
+    console.error(`\n🔄 [RALPH LOOP] Iteration ${state.iterations}/${CONFIG.maxIterations}`);
+    console.error(`   Completion marker "${CONFIG.completionMarker}" not found.`);
+    console.error('   Continuing work...\n');
 
-    // 종료 차단
+    // Block termination
     const response = {
       decision: 'block',
-      reason: `[Ralph Loop ${state.iterations}/${CONFIG.maxIterations}] 완료 마커를 찾지 못했습니다. 작업을 계속해주세요. 완료 시 "${CONFIG.completionMarker}"를 출력하세요.`
+      reason: `[Ralph Loop ${state.iterations}/${CONFIG.maxIterations}] Completion marker not found. Please continue work. Output "${CONFIG.completionMarker}" when complete.`
     };
 
     if (CONFIG.customPrompt) {
-      response.reason += `\n\n작업 지시: ${CONFIG.customPrompt}`;
+      response.reason += `\n\nTask instruction: ${CONFIG.customPrompt}`;
     }
 
     console.log(JSON.stringify(response));
-    process.exit(2); // exit code 2로 종료 차단
+    process.exit(2); // exit code 2 to block termination
 
   } catch (e) {
     console.error('Hook error:', e.message);

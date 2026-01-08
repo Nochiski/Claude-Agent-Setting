@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
  * Pre-Commit Test Hook
- * git commit 실행 전 테스트 코드 탐색 및 실행
+ * Searches for and runs tests before git commit execution
  *
- * 동작:
- * 1. git commit 명령 감지
- * 2. 테스트 파일 존재 여부 확인
- * 3. 테스트 실행
- * 4. 실패 시 커밋 차단
+ * Behavior:
+ * 1. Detect git commit command
+ * 2. Check if test files exist
+ * 3. Run tests
+ * 4. Block commit on failure
  */
 
 const { execSync, spawnSync } = require('child_process');
@@ -15,7 +15,7 @@ const readline = require('readline');
 const fs = require('fs');
 const path = require('path');
 
-// 테스트 프레임워크별 설정
+// Test framework configurations
 const TEST_CONFIGS = [
   // JavaScript/TypeScript
   { files: ['package.json'], testCmd: 'npm test', checkScript: true },
@@ -43,7 +43,7 @@ const TEST_CONFIGS = [
   { files: ['phpunit.xml', 'phpunit.xml.dist'], testCmd: 'vendor/bin/phpunit' },
 ];
 
-// 일반적인 테스트 디렉토리/파일 패턴
+// Common test directory/file patterns
 const TEST_PATTERNS = [
   'test', 'tests', 'spec', 'specs', '__tests__',
   '*.test.js', '*.spec.js', '*.test.ts', '*.spec.ts',
@@ -71,7 +71,7 @@ function findTestConfig(cwd) {
     for (const file of config.files) {
       const fullPath = path.join(cwd, file);
       if (fileExists(fullPath)) {
-        // package.json의 경우 test 스크립트가 있는지 확인
+        // For package.json, check if test script exists
         if (config.checkScript && file === 'package.json') {
           try {
             const pkg = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
@@ -92,7 +92,7 @@ function findTestConfig(cwd) {
 }
 
 function hasTestFiles(cwd) {
-  // 테스트 디렉토리 확인
+  // Check test directories
   const testDirs = ['test', 'tests', 'spec', 'specs', '__tests__', 'src/__tests__'];
   for (const dir of testDirs) {
     if (fileExists(path.join(cwd, dir))) {
@@ -100,7 +100,7 @@ function hasTestFiles(cwd) {
     }
   }
 
-  // 테스트 파일 패턴 확인 (간단한 검사)
+  // Check test file patterns (simple check)
   try {
     const result = spawnSync('find', ['.', '-name', '*.test.*', '-o', '-name', '*.spec.*', '-o', '-name', 'test_*'], {
       cwd,
@@ -111,10 +111,10 @@ function hasTestFiles(cwd) {
       return true;
     }
   } catch {
-    // find 명령 실패 시 무시
+    // Ignore find command failure
   }
 
-  // Windows용 대체 검사
+  // Fallback check for Windows
   try {
     const files = fs.readdirSync(cwd);
     for (const file of files) {
@@ -124,7 +124,7 @@ function hasTestFiles(cwd) {
       }
     }
   } catch {
-    // 디렉토리 읽기 실패 시 무시
+    // Ignore directory read failure
   }
 
   return false;
@@ -132,7 +132,7 @@ function hasTestFiles(cwd) {
 
 function runTests(testCmd, cwd) {
   try {
-    // 테스트 실행 (최대 5분)
+    // Run tests (max 5 minutes)
     execSync(testCmd, {
       cwd,
       stdio: 'pipe',
@@ -151,7 +151,7 @@ function runTests(testCmd, cwd) {
 
 function isGitCommitCommand(command) {
   if (!command) return false;
-  // git commit 패턴 매칭
+  // git commit pattern matching
   const patterns = [
     /\bgit\s+commit\b/i,
     /\bgit\s+.*commit\b/i
@@ -174,39 +174,39 @@ async function main() {
   try {
     const data = JSON.parse(input);
 
-    // Bash 도구의 git commit 명령인지 확인
+    // Check if Bash tool is running git commit command
     const toolName = data.tool_name || '';
     const toolInput = data.tool_input || {};
     const command = toolInput.command || '';
 
     if (toolName !== 'Bash' || !isGitCommitCommand(command)) {
-      // git commit이 아니면 그냥 통과
+      // Pass through if not git commit
       console.log(JSON.stringify(data));
       return;
     }
 
-    // git commit 명령 감지됨
+    // git commit command detected
     const cwd = getCwd();
 
-    // 테스트 설정 찾기
+    // Find test configuration
     const testConfig = findTestConfig(cwd);
     const hasTests = hasTestFiles(cwd);
 
     if (!testConfig && !hasTests) {
-      // 테스트 파일이 없으면 경고만 출력하고 통과
+      // No test files - warn and pass through
       console.error('[pre-commit-test] Warning: No test files found. Proceeding with commit.');
       console.log(JSON.stringify(data));
       return;
     }
 
     if (!testConfig) {
-      // 테스트 파일은 있지만 실행 방법을 모름
+      // Test files exist but don't know how to run them
       console.error('[pre-commit-test] Warning: Test files found but no test runner configured.');
       console.log(JSON.stringify(data));
       return;
     }
 
-    // 테스트 실행
+    // Run tests
     console.error(`[pre-commit-test] Running tests: ${testConfig.testCmd}`);
     const result = runTests(testConfig.testCmd, cwd);
 
@@ -214,7 +214,7 @@ async function main() {
       console.error('[pre-commit-test] Tests passed! Proceeding with commit.');
       console.log(JSON.stringify(data));
     } else {
-      // 테스트 실패 - 커밋 차단
+      // Test failed - block commit
       const response = {
         decision: "block",
         reason: `Tests failed. Please fix failing tests before committing.\n\nCommand: ${testConfig.testCmd}\nExit code: ${result.exitCode}\n\nError output:\n${result.error ? result.error.substring(0, 500) : 'No error output'}`
@@ -223,7 +223,7 @@ async function main() {
     }
   } catch (e) {
     console.error('[pre-commit-test] Hook error:', e.message);
-    // 에러 시에도 커밋 진행 허용 (훅 실패가 작업을 막지 않도록)
+    // Allow commit even on error (hook failure should not block work)
     try {
       const data = JSON.parse(input);
       console.log(JSON.stringify(data));

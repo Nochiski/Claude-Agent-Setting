@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 /**
  * Agent Usage Reminder Hook
- * PostToolUse 이벤트에서 에이전트 사용이 권장되는 상황 감지
+ * Detects situations where agent delegation is recommended during PostToolUse events
  *
- * 기능:
- * - 직접 Glob/Grep/Read를 많이 사용할 때 explore 에이전트 권장
- * - 복잡한 작업을 직접 수행할 때 전문 에이전트 권장
- * - "Never Work Alone" 원칙 리마인드
+ * Features:
+ * - Recommends explore agent when using Glob/Grep/Read frequently
+ * - Recommends specialized agents for complex tasks
+ * - Reminds "Never Work Alone" principle
  *
- * 환경변수:
- * - AGENT_REMINDER=false: 리마인더 비활성화
+ * Environment variables:
+ * - AGENT_REMINDER=false: Disable reminders
  */
 
 const readline = require('readline');
@@ -19,27 +19,27 @@ const path = require('path');
 const CONFIG = {
   enabled: process.env.AGENT_REMINDER !== 'false',
   stateFile: path.join(process.env.USERPROFILE || process.env.HOME, '.claude', 'agent-reminder-state.json'),
-  // 직접 도구 호출 임계치
+  // Direct tool call thresholds
   thresholds: {
-    search: 5,     // Glob/Grep 호출 수
-    read: 8,       // Read 호출 수
-    edit: 5        // Edit 호출 수
+    search: 5,     // Glob/Grep call count
+    read: 8,       // Read call count
+    edit: 5        // Edit call count
   }
 };
 
-// 에이전트 추천 매핑
+// Agent recommendation mapping
 const AGENT_SUGGESTIONS = {
   search: {
     agent: 'explore',
-    message: '코드베이스 탐색은 explore 에이전트에게 위임하세요.'
+    message: 'Delegate codebase exploration to the explore agent.'
   },
   read: {
     agent: 'librarian',
-    message: '문서/코드 조사는 librarian 에이전트에게 위임하세요.'
+    message: 'Delegate documentation/code research to the librarian agent.'
   },
   edit: {
     agent: 'refactorer',
-    message: '대규모 코드 수정은 refactorer 에이전트를 고려하세요.'
+    message: 'Consider using the refactorer agent for large-scale code changes.'
   }
 };
 
@@ -49,7 +49,7 @@ function loadState() {
       return JSON.parse(fs.readFileSync(CONFIG.stateFile, 'utf8'));
     }
   } catch (e) {
-    // 무시
+    // ignore
   }
   return {
     counts: { Glob: 0, Grep: 0, Read: 0, Edit: 0 },
@@ -62,7 +62,7 @@ function saveState(state) {
   try {
     fs.writeFileSync(CONFIG.stateFile, JSON.stringify(state, null, 2));
   } catch (e) {
-    // 무시
+    // ignore
   }
 }
 
@@ -75,7 +75,7 @@ function categorizeToolUse(toolName) {
 
 async function main() {
   if (!CONFIG.enabled) {
-    // 비활성화된 경우 패스스루
+    // Pass through when disabled
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: false });
     let input = '';
     for await (const line of rl) input += line;
@@ -98,14 +98,14 @@ async function main() {
     const data = JSON.parse(input);
     const state = loadState();
 
-    // 10분 이상 경과 시 리셋
+    // Reset if more than 10 minutes elapsed
     if (Date.now() - state.lastReset > 10 * 60 * 1000) {
       state.counts = { Glob: 0, Grep: 0, Read: 0, Edit: 0 };
       state.remindedFor = [];
       state.lastReset = Date.now();
     }
 
-    // Task 도구 사용 시 카운트 리셋 (에이전트 사용 중)
+    // Reset count when Task tool is used (agent in use)
     if (data.tool_name === 'Task') {
       state.counts = { Glob: 0, Grep: 0, Read: 0, Edit: 0 };
       state.remindedFor = [];
@@ -114,12 +114,12 @@ async function main() {
       return;
     }
 
-    // 도구 사용 카운트
+    // Tool usage count
     if (state.counts.hasOwnProperty(data.tool_name)) {
       state.counts[data.tool_name]++;
     }
 
-    // 카테고리별 체크
+    // Check by category
     const category = categorizeToolUse(data.tool_name);
     if (category) {
       let totalForCategory = 0;
@@ -134,12 +134,12 @@ async function main() {
       const threshold = CONFIG.thresholds[category];
       const suggestion = AGENT_SUGGESTIONS[category];
 
-      // 임계치 초과 & 아직 리마인드 안 함
+      // Threshold exceeded & not yet reminded
       if (totalForCategory >= threshold && !state.remindedFor.includes(category)) {
-        console.error(`\n💡 [AGENT REMINDER] "${data.tool_name}" ${totalForCategory}회 사용`);
+        console.error(`\n💡 [AGENT REMINDER] "${data.tool_name}" used ${totalForCategory} times`);
         console.error(`   ${suggestion.message}`);
         console.error(`   Task(subagent_type="${suggestion.agent}", prompt="...")`);
-        console.error('   "Never Work Alone" - 전문가 에이전트가 있으면 위임하세요.\n');
+        console.error('   "Never Work Alone" - Delegate to expert agents when available.\n');
 
         state.remindedFor.push(category);
       }
@@ -147,7 +147,7 @@ async function main() {
 
     saveState(state);
 
-    // 데이터 그대로 반환
+    // Return data as-is
     console.log(JSON.stringify(data));
   } catch (e) {
     console.error('Hook error:', e.message);

@@ -1,22 +1,22 @@
 #!/usr/bin/env node
 /**
  * Empty Task Response Detector Hook
- * PostToolUse 이벤트에서 Task(서브에이전트) 빈 응답 감지
+ * Detects empty responses from Task (subagent) during PostToolUse events
  *
- * 기능:
- * - Task 도구의 빈 응답 감지
- * - 경고 메시지 및 재시도 힌트 제공
+ * Features:
+ * - Detects empty responses from Task tool
+ * - Provides warning messages and retry hints
  */
 
 const readline = require('readline');
 
-// 빈 응답으로 간주하는 패턴
+// Patterns considered as empty response
 const EMPTY_PATTERNS = [
-  /^\s*$/,                           // 공백만
+  /^\s*$/,                           // Whitespace only
   /^(undefined|null)$/i,             // undefined/null
-  /^no\s+(result|output|response)/i, // "no result" 등
-  /^error:/i,                        // 에러로 시작
-  /^failed/i                         // 실패로 시작
+  /^no\s+(result|output|response)/i, // "no result" etc.
+  /^error:/i,                        // Starts with error
+  /^failed/i                         // Starts with failed
 ];
 
 function isEmptyResponse(result) {
@@ -41,26 +41,26 @@ async function main() {
   try {
     const data = JSON.parse(input);
 
-    // Task 도구인 경우에만 검사
+    // Only check Task tool
     if (data.tool_name === 'Task') {
       const result = data.tool_result;
       const subagentType = data.tool_input?.subagent_type || 'unknown';
 
       if (isEmptyResponse(result)) {
-        console.error(`\n⚠️  [EMPTY TASK RESPONSE] 서브에이전트 '${subagentType}'가 빈 응답을 반환했습니다.`);
-        console.error('   가능한 원인:');
-        console.error('   - 프롬프트가 불명확함');
-        console.error('   - 서브에이전트가 작업을 완료하지 못함');
-        console.error('   - 타임아웃 또는 에러 발생');
-        console.error('   권장 조치: 더 구체적인 프롬프트로 재시도하세요.\n');
+        console.error(`\n⚠️  [EMPTY TASK RESPONSE] Subagent '${subagentType}' returned an empty response.`);
+        console.error('   Possible causes:');
+        console.error('   - Unclear prompt');
+        console.error('   - Subagent failed to complete task');
+        console.error('   - Timeout or error occurred');
+        console.error('   Recommended action: Retry with a more specific prompt.\n');
 
-        // tool_result에 경고 추가
+        // Add warning to tool_result
         data.tool_result = (data.tool_result || '') +
-          '\n\n<system-warning>서브에이전트가 빈 응답을 반환했습니다. 더 구체적인 프롬프트로 재시도를 고려하세요.</system-warning>';
+          '\n\n<system-warning>Subagent returned an empty response. Consider retrying with a more specific prompt.</system-warning>';
       }
     }
 
-    // 데이터 반환
+    // Return data
     console.log(JSON.stringify(data));
   } catch (e) {
     console.error('Hook error:', e.message);

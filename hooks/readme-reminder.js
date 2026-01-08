@@ -1,45 +1,42 @@
 #!/usr/bin/env node
 /**
  * README Reminder Hook
- * 코드 변경 후 README 업데이트 필요 여부 체크
+ * Checks if README update is needed after code changes
  *
- * 트리거 조건:
- * - 새 파일 생성
- * - API 엔드포인트 변경
- * - 설정 파일 변경
- * - 주요 기능 추가/변경
+ * Trigger conditions:
+ * - New file creation
+ * - API endpoint changes
+ * - Configuration file changes
+ * - Major feature additions/changes
  */
 
 const path = require('path');
 const readline = require('readline');
 
-// README 업데이트가 필요할 수 있는 파일 패턴
+// File patterns that may require README update
 const SIGNIFICANT_PATTERNS = [
-  /^src\/api\//,           // API 변경
-  /^src\/routes\//,        // 라우트 변경
-  /^config\//,             // 설정 변경
-  /package\.json$/,        // 의존성 변경
-  /\.env\.example$/,       // 환경변수 변경
-  /Dockerfile$/,           // Docker 설정
+  /^src\/api\//,           // API changes
+  /^src\/routes\//,        // Route changes
+  /^config\//,             // Config changes
+  /package\.json$/,        // Dependency changes
+  /\.env\.example$/,       // Environment variable changes
+  /Dockerfile$/,           // Docker config
   /docker-compose/,        // Docker Compose
-  /\.github\/workflows/,   // CI/CD 변경
-  /schema/,                // 스키마 변경
-  /migration/,             // DB 마이그레이션
+  /\.github\/workflows/,   // CI/CD changes
+  /schema/,                // Schema changes
+  /migration/,             // DB migrations
 ];
 
-// 새 기능 추가 감지 키워드
+// Keywords indicating new feature addition
 const NEW_FEATURE_KEYWORDS = [
   'new feature',
   'add endpoint',
   'create api',
   'implement',
-  '새 기능',
-  '추가',
-  '구현',
 ];
 
 function shouldRemind(filePath, toolInput) {
-  // 패턴 매칭
+  // Pattern matching
   const relativePath = filePath.replace(/\\/g, '/');
   for (const pattern of SIGNIFICANT_PATTERNS) {
     if (pattern.test(relativePath)) {
@@ -47,7 +44,7 @@ function shouldRemind(filePath, toolInput) {
     }
   }
 
-  // 새 파일 생성 감지 (Write 도구)
+  // Detect new file creation (Write tool)
   if (toolInput && !toolInput.old_string && toolInput.content) {
     return true;
   }
@@ -70,20 +67,20 @@ async function main() {
   try {
     const data = JSON.parse(input);
 
-    // Edit 또는 Write 도구인 경우에만 처리
+    // Only process Edit or Write tools
     if (data.tool_name === 'Edit' || data.tool_name === 'Write') {
       const filePath = data.tool_input?.file_path || '';
 
-      // README 자체 수정은 무시
+      // Ignore README itself
       if (filePath.toLowerCase().includes('readme')) {
         console.log(JSON.stringify(data));
         return;
       }
 
       if (shouldRemind(filePath, data.tool_input)) {
-        // 결과에 리마인더 추가
+        // Add reminder to result
         if (data.tool_result) {
-          data.tool_result += '\n\n<readme-reminder>이 변경사항을 README.md에 반영해야 할 수 있습니다. 새 기능, API 변경, 설정 변경이 있다면 README를 업데이트하세요.</readme-reminder>';
+          data.tool_result += '\n\n<readme-reminder>This change may need to be reflected in README.md. Update README if there are new features, API changes, or config changes.</readme-reminder>';
         }
       }
     }

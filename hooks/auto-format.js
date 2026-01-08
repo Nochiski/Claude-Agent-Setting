@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
  * Auto Format Hook
- * Edit/Write 도구 사용 후 자동으로 코드 포매터 실행
+ * Automatically runs code formatter after Edit/Write tool usage
  *
- * 지원 포매터:
+ * Supported formatters:
  * - JavaScript/TypeScript: prettier, eslint --fix
  * - Python: black, ruff
  * - Go: gofmt
@@ -15,7 +15,7 @@ const path = require('path');
 const fs = require('fs');
 const readline = require('readline');
 
-// 확장자별 포매터 설정
+// Formatter settings by file extension
 const FORMATTERS = {
   '.js': ['prettier --write', 'eslint --fix'],
   '.jsx': ['prettier --write', 'eslint --fix'],
@@ -82,7 +82,7 @@ async function main() {
   try {
     const data = JSON.parse(input);
 
-    // Edit 또는 Write 도구인 경우에만 처리
+    // Only process Edit or Write tools
     if (data.tool_name === 'Edit' || data.tool_name === 'Write') {
       const filePath = data.tool_input?.file_path;
 
@@ -91,7 +91,7 @@ async function main() {
 
         for (const formatter of formatters) {
           if (runFormatter(formatter, filePath)) {
-            // 첫 번째 성공한 포매터로 충분
+            // First successful formatter is enough
             console.error(`Formatted: ${path.basename(filePath)}`);
             break;
           }
@@ -99,7 +99,7 @@ async function main() {
       }
     }
 
-    // 데이터 그대로 반환
+    // Return data as-is
     console.log(JSON.stringify(data));
   } catch (e) {
     console.error('Hook error:', e.message);

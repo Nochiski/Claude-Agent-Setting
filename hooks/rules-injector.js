@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
  * Rules Injector Hook
- * UserPromptSubmit 시 프로젝트 규칙을 컨텍스트에 주입
+ * Injects project rules into context on UserPromptSubmit
  *
- * 규칙 파일 우선순위:
- * 1. CLAUDE.md (프로젝트 루트)
+ * Rule file priority:
+ * 1. CLAUDE.md (project root)
  * 2. .claude/rules.md
- * 3. .cursorrules (Cursor 호환)
+ * 3. .cursorrules (Cursor compatible)
  */
 
 const fs = require('fs');
@@ -20,7 +20,7 @@ const RULE_FILES = [
   '.cursor/rules.md'
 ];
 
-// 세션당 한 번만 주입하기 위한 추적
+// Tracking to inject only once per session
 const INJECTED_FLAG = '<!-- rules-injected -->';
 
 function findRulesFile(cwd) {
@@ -58,23 +58,23 @@ async function main() {
     const data = JSON.parse(input);
     const cwd = process.cwd();
 
-    // 이미 주입된 경우 스킵
+    // Skip if already injected
     const prompt = data.user_prompt || '';
     if (prompt.includes(INJECTED_FLAG)) {
       console.log(JSON.stringify(data));
       return;
     }
 
-    // 규칙 파일 찾기
+    // Find rules file
     const rulesPath = findRulesFile(cwd);
     if (rulesPath) {
       const rules = loadRules(rulesPath);
       if (rules) {
-        // 첫 프롬프트에만 규칙 주입
+        // Inject rules only on first prompt
         const ruleName = path.basename(rulesPath);
         const injection = `${INJECTED_FLAG}\n<project-rules source="${ruleName}">\n${rules}\n</project-rules>\n\n`;
 
-        // 프롬프트 앞에 규칙 추가
+        // Add rules before prompt
         if (data.user_prompt) {
           data.user_prompt = injection + data.user_prompt;
         }

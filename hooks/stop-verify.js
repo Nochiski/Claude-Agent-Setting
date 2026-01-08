@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
  * Stop Verification Hook
- * 세션 종료 시 작업 검증 수행
+ * Performs work verification on session termination
  *
- * 검증 항목:
- * - 미완료 TODO 체크
- * - 테스트 실행 (설정된 경우)
- * - 빌드 검증 (설정된 경우)
+ * Verification items:
+ * - Check incomplete TODOs
+ * - Run tests (if configured)
+ * - Verify build (if configured)
  */
 
 const { execSync } = require('child_process');
@@ -14,7 +14,7 @@ const readline = require('readline');
 const fs = require('fs');
 const path = require('path');
 
-// 검증 설정 (환경변수로 커스터마이징 가능)
+// Verification settings (customizable via environment variables)
 const CONFIG = {
   checkTodos: process.env.VERIFY_TODOS !== 'false',
   runTests: process.env.VERIFY_TESTS === 'true',
@@ -24,13 +24,13 @@ const CONFIG = {
 };
 
 function checkUnfinishedTodos(data) {
-  // 대화 내용에서 미완료 TODO 패턴 찾기
+  // Find incomplete TODO patterns in conversation content
   const content = JSON.stringify(data);
   const todoPatterns = [
-    /\[ \]/g,           // 미체크 체크박스
-    /TODO:/gi,          // TODO 코멘트
-    /FIXME:/gi,         // FIXME 코멘트
-    /in_progress/g      // 진행 중인 작업
+    /\[ \]/g,           // Unchecked checkbox
+    /TODO:/gi,          // TODO comments
+    /FIXME:/gi,         // FIXME comments
+    /in_progress/g      // In-progress work
   ];
 
   let issues = [];
@@ -69,39 +69,39 @@ async function main() {
     const data = JSON.parse(input);
     let warnings = [];
 
-    // 1. 미완료 TODO 체크
+    // 1. Check incomplete TODOs
     if (CONFIG.checkTodos) {
       const todoIssues = checkUnfinishedTodos(data);
       if (todoIssues.length > 0) {
-        warnings.push('미완료 작업 발견:');
+        warnings.push('Incomplete work found:');
         warnings = warnings.concat(todoIssues.map(i => `  - ${i}`));
       }
     }
 
-    // 2. 테스트 실행
+    // 2. Run tests
     if (CONFIG.runTests) {
       const testResult = runCommand(CONFIG.testCommand);
       if (!testResult.success) {
-        warnings.push(`테스트 실패: ${CONFIG.testCommand}`);
+        warnings.push(`Tests failed: ${CONFIG.testCommand}`);
       }
     }
 
-    // 3. 빌드 검증
+    // 3. Verify build
     if (CONFIG.runBuild) {
       const buildResult = runCommand(CONFIG.buildCommand);
       if (!buildResult.success) {
-        warnings.push(`빌드 실패: ${CONFIG.buildCommand}`);
+        warnings.push(`Build failed: ${CONFIG.buildCommand}`);
       }
     }
 
-    // 경고 출력
+    // Output warnings
     if (warnings.length > 0) {
-      console.error('\n=== 세션 종료 전 검증 결과 ===');
+      console.error('\n=== Pre-session termination verification results ===');
       warnings.forEach(w => console.error(w));
-      console.error('================================\n');
+      console.error('=====================================================\n');
     }
 
-    // 데이터 그대로 반환 (차단하지 않음)
+    // Return data as-is (no blocking)
     console.log(JSON.stringify(data));
   } catch (e) {
     console.error('Hook error:', e.message);
