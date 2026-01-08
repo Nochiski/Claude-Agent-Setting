@@ -1,13 +1,15 @@
 # Claude Code Agents
 
-Claude Code 서브에이전트 자동 설정 도구
+Automatic setup tool for Claude Code subagents.
 
-로컬 Claude Code 환경에 **10개 서브에이전트**, **MCP 서버**, **11개 자동화 훅**을 일괄 적용합니다.
+Applies **10 subagents**, **MCP servers**, and **11 automation hooks** to your local Claude Code environment.
 
-## 빠른 설치
+[한국어 README](./README.ko.md)
+
+## Quick Install
 
 ```bash
-# 레포지토리 클론
+# Clone repository
 git clone https://github.com/YOUR_USERNAME/claude_agents.git
 cd claude_agents
 
@@ -18,134 +20,134 @@ cd claude_agents
 bash install.sh
 ```
 
-설치 스크립트 수행 작업:
-- `~/.claude/` 디렉토리 생성
-- 기존 `settings.json` 백업
-- 에이전트, 훅, 스킬, MCP 설정 복사
+The install script will:
+- Create `~/.claude/` directory
+- Backup existing `settings.json`
+- Copy agents, hooks, skills, and MCP configuration
 
-## 서브에이전트 (10개)
+## Subagents (10)
 
-| 에이전트 | 모델 | 역할 |
-|---------|------|------|
-| **oracle** | Opus | 아키텍처 설계, 전략 조언, 기술 의사결정 |
-| **planner** | Opus | 구현 계획 수립, 작업 분해 |
-| **explore** | Haiku | 코드베이스 빠른 탐색 (READ-ONLY) |
-| **code-reviewer** | Sonnet | 코드 리뷰, 버그/보안 검토 |
-| **frontend-designer** | Sonnet | Figma → 코드 변환 |
-| **librarian** | Sonnet | 문서 탐색, 리서치, 프로젝트 구조 파악 |
-| **debugger** | Sonnet | 버그 분석, 에러 추적, 로그 해석 |
-| **test-writer** | Sonnet | 테스트 코드 작성 (unit, integration, e2e) |
-| **refactorer** | Sonnet | 코드 리팩토링, 구조 개선 |
-| **formatter** | Haiku | 코드 포매팅, 스타일 정리, 린트 수정 |
+| Agent | Model | Role |
+|-------|-------|------|
+| **oracle** | Opus | Architecture design, strategic advice, technical decisions |
+| **planner** | Opus | Implementation planning, task breakdown |
+| **explore** | Haiku | Fast codebase exploration (READ-ONLY) |
+| **code-reviewer** | Sonnet | Code review, bug/security review |
+| **frontend-designer** | Sonnet | Figma → code conversion |
+| **librarian** | Sonnet | Documentation search, research, project structure analysis |
+| **debugger** | Sonnet | Bug analysis, error tracking, log interpretation |
+| **test-writer** | Sonnet | Test code writing (unit, integration, e2e) |
+| **refactorer** | Sonnet | Code refactoring, structure improvement |
+| **formatter** | Haiku | Code formatting, style cleanup, lint fixes |
 
-### 사용 예시
+### Usage Examples
 ```
-"oracle에게 아키텍처 리뷰해달라고 해"
-"code-reviewer로 이 PR 검토해줘"
-"test-writer로 테스트 작성해줘"
-"debugger로 이 에러 분석해줘"
+"Ask oracle to review this architecture"
+"Review this PR with code-reviewer"
+"Write tests with test-writer"
+"Analyze this error with debugger"
 ```
 
-### 역할 구분 가이드
+### Role Selection Guide
 
-| 상황 | 선택 |
-|------|------|
-| 에러 메시지/스택 트레이스 있음 | `debugger` |
-| PR 리뷰, 코드 품질 검토 | `code-reviewer` |
-| 프로젝트 구조/파일 탐색 | `librarian` |
-| 코드 포매팅, import 정리 | `formatter` |
-| 구조 변경, 패턴 적용 | `refactorer` |
+| Situation | Choice |
+|-----------|--------|
+| Error message/stack trace present | `debugger` |
+| PR review, code quality check | `code-reviewer` |
+| Project structure/file exploration | `librarian` |
+| Code formatting, import organization | `formatter` |
+| Structure changes, pattern application | `refactorer` |
 
-자세한 내용은 [agents.md](./agents.md) 참조
+See [agents.md](./agents.md) for details.
 
-## MCP 서버 (3개)
+## MCP Servers (3)
 
-| MCP | 용도 | 인증 |
-|-----|------|------|
-| **Context7** | 최신 라이브러리 문서 조회 | 불필요 |
-| **Figma** | Figma 디자인 데이터 조회 | `FIGMA_API_KEY` 필요 |
-| **GitHub** | 리포지토리, 이슈, PR 조회 | `gh auth login` 또는 PAT |
+| MCP | Purpose | Authentication |
+|-----|---------|----------------|
+| **Context7** | Latest library documentation lookup | Not required |
+| **Figma** | Figma design data retrieval | `FIGMA_API_KEY` required |
+| **GitHub** | Repository, issue, PR access | `gh auth login` or PAT |
 
-### GitHub MCP 설정 (권장: OAuth)
+### GitHub MCP Setup (Recommended: OAuth)
 ```bash
-# gh CLI로 OAuth 로그인
+# OAuth login with gh CLI
 gh auth login
 
-# 토큰을 환경변수로 설정
+# Set token as environment variable
 export GITHUB_PERSONAL_ACCESS_TOKEN=$(gh auth token)
 ```
 
-### Figma MCP 설정
+### Figma MCP Setup
 ```bash
 export FIGMA_API_KEY="your-figma-api-key"
 ```
 
-## Hooks (11개)
+## Hooks (11)
 
-| 훅 | 이벤트 | 기능 |
-|----|--------|------|
-| `rules-injector.js` | UserPromptSubmit | **README + 프로젝트 규칙 자동 주입** |
-| `pre-commit-test.js` | PreToolUse | 커밋 전 테스트 실행 |
-| `auto-format.js` | PostToolUse | 코드 자동 포매팅 |
-| `readme-reminder.js` | PostToolUse | README 업데이트 리마인드 |
-| `edit-error-recovery.js` | PostToolUse | Edit 에러 복구 힌트 |
-| `empty-task-response-detector.js` | PostToolUse | 서브에이전트 빈 응답 감지 |
-| `context-window-monitor.js` | PostToolUse | 컨텍스트 사용량 모니터링 |
-| `agent-usage-reminder.js` | PostToolUse | 에이전트 위임 리마인드 |
-| `stop-verify.js` | Stop | 세션 종료 시 검증 |
-| `ralph-loop.js` | Stop | **자동 반복 실행 (Ralph Wiggum)** |
-| `comment-checker.js` | PostToolUse | 과도한 주석 방지 |
+| Hook | Event | Function |
+|------|-------|----------|
+| `rules-injector.js` | UserPromptSubmit | **Auto-inject README + project rules** |
+| `pre-commit-test.js` | PreToolUse | Run tests before commit |
+| `auto-format.js` | PostToolUse | Auto-format code |
+| `readme-reminder.js` | PostToolUse | README update reminder |
+| `edit-error-recovery.js` | PostToolUse | Edit error recovery hints |
+| `empty-task-response-detector.js` | PostToolUse | Detect empty subagent responses |
+| `context-window-monitor.js` | PostToolUse | Context usage monitoring |
+| `agent-usage-reminder.js` | PostToolUse | Agent delegation reminder |
+| `stop-verify.js` | Stop | Verification on session end |
+| `ralph-loop.js` | Stop | **Auto-loop execution (Ralph Wiggum)** |
+| `comment-checker.js` | PostToolUse | Prevent excessive comments |
 
-### Ralph Loop (자동 반복 실행)
-`ralph-loop.js`는 Todo가 완료될 때까지 세션 종료를 차단하여 자동으로 작업을 계속합니다.
+### Ralph Loop (Auto-Loop Execution)
+`ralph-loop.js` blocks session termination until todos are complete, automatically continuing work.
 
 ```bash
-# 환경변수로 활성화
-set RALPH_ENABLED=true           # 기능 활성화
-set RALPH_MAX_ITERATIONS=20      # 최대 반복 횟수
+# Enable with environment variables
+set RALPH_ENABLED=true           # Enable feature
+set RALPH_MAX_ITERATIONS=20      # Maximum iterations
 ```
 
-**완료 조건**: TodoWrite의 모든 항목이 `completed` 상태가 되면 자동 종료
+**Completion condition**: Auto-terminates when all TodoWrite items reach `completed` status.
 
-### README 자동 주입
-`rules-injector.js`가 프롬프트 제출 시 프로젝트의 `README.md`를 컨텍스트에 자동 주입합니다.
+### README Auto-Injection
+`rules-injector.js` automatically injects the project's `README.md` into context on prompt submission.
 
-자세한 내용은 [hooks/README.md](./hooks/README.md) 참조
+See [hooks/README.md](./hooks/README.md) for details.
 
-## 프로젝트 규칙 (Cursor 호환)
+## Project Rules (Cursor Compatible)
 
-프로젝트 루트에 규칙 파일을 두면 자동으로 컨텍스트에 주입됩니다:
+Place rule files at project root for automatic context injection:
 
 ```bash
-# 지원 파일 (우선순위 순)
-README.md          # 프로젝트 설명 (자동 주입)
-CLAUDE.md          # Claude 규칙
+# Supported files (priority order)
+README.md          # Project description (auto-injected)
+CLAUDE.md          # Claude rules
 .claude/rules.md
-.cursorrules       # Cursor 호환
+.cursorrules       # Cursor compatible
 .cursor/rules.md
 ```
 
-템플릿: [templates/CLAUDE.md](./templates/CLAUDE.md)
+Template: [templates/CLAUDE.md](./templates/CLAUDE.md)
 
-## 권장 워크플로우
+## Recommended Workflow
 
 ```
-[Plan 모드] → 계획 협의 → [Auto-accept] → 1-shot 완성
+[Plan mode] → Discuss plan → [Auto-accept] → 1-shot completion
 ```
 
-1. **Plan 모드 진입**: `Shift+Tab` 두 번
-2. **계획 협의**: 요구사항 분석, 변경 범위 정의
-3. **실행 모드 전환**: `Shift+Tab` 한 번 (Auto-accept)
-4. **1-shot 실행**: 좋은 계획 = 한 번에 완성
+1. **Enter Plan mode**: `Shift+Tab` twice
+2. **Discuss plan**: Analyze requirements, define change scope
+3. **Switch to execution mode**: `Shift+Tab` once (Auto-accept)
+4. **1-shot execution**: Good plan = complete in one go
 
-## 프로젝트 구조
+## Project Structure
 
 ```
 claude_agents/
 ├── .claude/
-│   ├── settings.local.json   # Claude Code 설정 (MCP, hooks 포함)
-│   ├── CLAUDE.md             # 에이전트 오케스트레이션 규칙
-│   └── agents/               # 서브에이전트 정의 (10개)
+│   ├── settings.local.json   # Claude Code settings (MCP, hooks)
+│   ├── CLAUDE.md             # Agent orchestration rules
+│   └── agents/               # Subagent definitions (10)
 │       ├── oracle.md
 │       ├── planner.md
 │       ├── explore.md
@@ -156,39 +158,39 @@ claude_agents/
 │       ├── test-writer.md
 │       ├── refactorer.md
 │       └── formatter.md
-├── hooks/                    # 이벤트 기반 훅
-├── skills/                   # 슬래시 커맨드
+├── hooks/                    # Event-based hooks
+├── skills/                   # Slash commands
 ├── mcp/
-│   └── mcp.json              # MCP 서버 설정
+│   └── mcp.json              # MCP server configuration
 ├── templates/
-│   └── CLAUDE.md             # 프로젝트 규칙 템플릿
-├── agents.md                 # 서브에이전트 상세 문서
-├── install.ps1               # Windows 설치
-└── install.sh                # Unix 설치
+│   └── CLAUDE.md             # Project rules template
+├── agents.md                 # Subagent detailed docs
+├── install.ps1               # Windows install
+└── install.sh                # Unix install
 ```
 
-## 수동 설치
+## Manual Installation
 
 ```bash
-# 설정 파일 복사
+# Copy settings file
 cp .claude/settings.local.json ~/.claude/settings.json
 
-# 에이전트 복사
+# Copy agents
 cp -r .claude/agents/* ~/.claude/agents/
 
-# CLAUDE.md 복사
+# Copy CLAUDE.md
 cp .claude/CLAUDE.md ~/.claude/CLAUDE.md
 
-# 훅 복사
+# Copy hooks
 cp -r hooks/* ~/.claude/hooks/
 
-# 스킬 복사
+# Copy skills
 cp -r skills/* ~/.claude/skills/
 ```
 
-## 참고 자료
+## References
 
-- [Claude Code Subagents 문서](https://docs.anthropic.com/en/docs/claude-code)
+- [Claude Code Subagents Documentation](https://docs.anthropic.com/en/docs/claude-code)
 - [Context7 MCP](https://github.com/upstash/context7)
 - [Figma MCP](https://github.com/GLips/Figma-Context-MCP)
 - [GitHub MCP](https://github.com/modelcontextprotocol/servers)

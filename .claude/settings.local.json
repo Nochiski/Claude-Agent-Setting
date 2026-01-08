@@ -30,7 +30,8 @@
       "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" repo create claude-agents --public --description \"Claude Code 서브에이전트 자동 설정 도구 \\(9개 에이전트, 3개 MCP, 5개 훅\\)\" --source=. --remote=origin --push)",
       "WebFetch(domain:www.linkedin.com)",
       "Bash(del \"C:\\\\Users\\\\USER\\\\.claude\\\\hooks\\\\todo-continuation-enforcer.js\")",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   },
   "hooks": {
