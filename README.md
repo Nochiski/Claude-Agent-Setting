@@ -2,7 +2,7 @@
 
 Claude Code 서브에이전트 자동 설정 도구
 
-로컬 Claude Code 환경에 **9개 서브에이전트**, **MCP 서버**, **자동화 훅**을 일괄 적용합니다.
+로컬 Claude Code 환경에 **10개 서브에이전트**, **MCP 서버**, **11개 자동화 훅**을 일괄 적용합니다.
 
 ## 빠른 설치
 
@@ -23,12 +23,13 @@ bash install.sh
 - 기존 `settings.json` 백업
 - 에이전트, 훅, 스킬, MCP 설정 복사
 
-## 서브에이전트 (9개)
+## 서브에이전트 (10개)
 
 | 에이전트 | 모델 | 역할 |
 |---------|------|------|
 | **oracle** | Opus | 아키텍처 설계, 전략 조언, 기술 의사결정 |
 | **planner** | Opus | 구현 계획 수립, 작업 분해 |
+| **explore** | Haiku | 코드베이스 빠른 탐색 (READ-ONLY) |
 | **code-reviewer** | Sonnet | 코드 리뷰, 버그/보안 검토 |
 | **frontend-designer** | Sonnet | Figma → 코드 변환 |
 | **librarian** | Sonnet | 문서 탐색, 리서치, 프로젝트 구조 파악 |
@@ -79,19 +80,35 @@ export GITHUB_PERSONAL_ACCESS_TOKEN=$(gh auth token)
 export FIGMA_API_KEY="your-figma-api-key"
 ```
 
-## Hooks (자동화)
+## Hooks (11개)
 
 | 훅 | 이벤트 | 기능 |
 |----|--------|------|
 | `rules-injector.js` | UserPromptSubmit | **README + 프로젝트 규칙 자동 주입** |
+| `pre-commit-test.js` | PreToolUse | 커밋 전 테스트 실행 |
 | `auto-format.js` | PostToolUse | 코드 자동 포매팅 |
 | `readme-reminder.js` | PostToolUse | README 업데이트 리마인드 |
+| `edit-error-recovery.js` | PostToolUse | Edit 에러 복구 힌트 |
+| `empty-task-response-detector.js` | PostToolUse | 서브에이전트 빈 응답 감지 |
+| `context-window-monitor.js` | PostToolUse | 컨텍스트 사용량 모니터링 |
+| `agent-usage-reminder.js` | PostToolUse | 에이전트 위임 리마인드 |
 | `stop-verify.js` | Stop | 세션 종료 시 검증 |
+| `ralph-loop.js` | Stop | **자동 반복 실행 (Ralph Wiggum)** |
 | `comment-checker.js` | PostToolUse | 과도한 주석 방지 |
+
+### Ralph Loop (자동 반복 실행)
+`ralph-loop.js`는 Todo가 완료될 때까지 세션 종료를 차단하여 자동으로 작업을 계속합니다.
+
+```bash
+# 환경변수로 활성화
+set RALPH_ENABLED=true           # 기능 활성화
+set RALPH_MAX_ITERATIONS=20      # 최대 반복 횟수
+```
+
+**완료 조건**: TodoWrite의 모든 항목이 `completed` 상태가 되면 자동 종료
 
 ### README 자동 주입
 `rules-injector.js`가 프롬프트 제출 시 프로젝트의 `README.md`를 컨텍스트에 자동 주입합니다.
-Claude가 코딩 전에 반드시 프로젝트 컨텍스트를 파악하게 됩니다.
 
 자세한 내용은 [hooks/README.md](./hooks/README.md) 참조
 
@@ -128,9 +145,10 @@ claude_agents/
 ├── .claude/
 │   ├── settings.local.json   # Claude Code 설정 (MCP, hooks 포함)
 │   ├── CLAUDE.md             # 에이전트 오케스트레이션 규칙
-│   └── agents/               # 서브에이전트 정의 (9개)
+│   └── agents/               # 서브에이전트 정의 (10개)
 │       ├── oracle.md
 │       ├── planner.md
+│       ├── explore.md
 │       ├── code-reviewer.md
 │       ├── frontend-designer.md
 │       ├── librarian.md

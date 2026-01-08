@@ -42,8 +42,11 @@ $HOOKS_DIR = "$CLAUDE_DIR\hooks"
 if (!(Test-Path $HOOKS_DIR)) {
     New-Item -ItemType Directory -Path $HOOKS_DIR -Force | Out-Null
 }
-Copy-Item "$SCRIPT_DIR\hooks\*" $HOOKS_DIR -Recurse -Force
-Write-Host "Hooks copied to: $HOOKS_DIR" -ForegroundColor Green
+if (Test-Path "$SCRIPT_DIR\hooks\*.js") {
+    Copy-Item "$SCRIPT_DIR\hooks\*.js" $HOOKS_DIR -Force
+    $hookCount = (Get-ChildItem "$HOOKS_DIR\*.js").Count
+    Write-Host "Hooks copied to: $HOOKS_DIR ($hookCount files)" -ForegroundColor Green
+}
 
 # skills 디렉토리 복사
 $SKILLS_DIR = "$CLAUDE_DIR\skills"
