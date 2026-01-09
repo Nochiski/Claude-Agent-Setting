@@ -32,7 +32,8 @@ if (Test-Path $SOURCE_SETTINGS) {
     $windowsPath = $env:USERPROFILE -replace '\\', '\\\\'
     $settingsContent = $settingsContent -replace '~/\.claude/', "$windowsPath\\.claude\\"
     $settingsContent = $settingsContent -replace '~/', "$windowsPath\\"
-    $settingsContent | Set-Content $SETTINGS_FILE -Encoding UTF8 -NoNewline
+    # UTF8 without BOM
+    [System.IO.File]::WriteAllText($SETTINGS_FILE, $settingsContent)
 
     Write-Host "Settings copied to: $SETTINGS_FILE" -ForegroundColor Green
 }
