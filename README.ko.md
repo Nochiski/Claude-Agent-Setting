@@ -2,7 +2,7 @@
 
 Claude Code 서브에이전트 자동 설정 도구
 
-로컬 Claude Code 환경에 **10개 서브에이전트**, **MCP 서버**, **13개 자동화 훅**을 일괄 적용합니다.
+로컬 Claude Code 환경에 **8개 서브에이전트**, **MCP 서버**, **15개 자동화 훅**을 일괄 적용합니다.
 
 ## 빠른 설치
 
@@ -23,12 +23,11 @@ bash install.sh
 - 기존 `settings.json` 백업
 - 에이전트, 훅, 스킬, MCP 설정 복사
 
-## 서브에이전트 (10개)
+## 서브에이전트 (8개)
 
 | 에이전트 | 모델 | 역할 |
 |---------|------|------|
 | **oracle** | Opus | 아키텍처 설계, 전략 조언, 기술 의사결정 |
-| **planner** | Opus | 구현 계획 수립, 작업 분해 |
 | **explore** | Haiku | 코드베이스 빠른 탐색 (READ-ONLY) |
 | **code-reviewer** | Sonnet | 코드 리뷰, 버그/보안 검토 |
 | **frontend-designer** | Sonnet | Figma → 코드 변환 |
@@ -36,7 +35,6 @@ bash install.sh
 | **debugger** | Sonnet | 버그 분석, 에러 추적, 로그 해석 |
 | **test-writer** | Sonnet | 테스트 코드 작성 (unit, integration, e2e) |
 | **refactorer** | Sonnet | 코드 리팩토링, 구조 개선 |
-| **formatter** | Haiku | 코드 포매팅, 스타일 정리, 린트 수정 |
 
 ### 사용 예시
 ```
@@ -53,18 +51,18 @@ bash install.sh
 | 에러 메시지/스택 트레이스 있음 | `debugger` |
 | PR 리뷰, 코드 품질 검토 | `code-reviewer` |
 | 프로젝트 구조/파일 탐색 | `librarian` |
-| 코드 포매팅, import 정리 | `formatter` |
 | 구조 변경, 패턴 적용 | `refactorer` |
 
 자세한 내용은 [agents.md](./agents.md) 참조
 
-## MCP 서버 (3개)
+## MCP 서버 (4개)
 
 | MCP | 용도 | 인증 |
 |-----|------|------|
 | **Context7** | 최신 라이브러리 문서 조회 | 불필요 |
 | **Figma** | Figma 디자인 데이터 조회 | `FIGMA_API_KEY` 필요 |
 | **GitHub** | 리포지토리, 이슈, PR 조회 | `gh auth login` 또는 PAT |
+| **ast-grep** | AST 기반 코드 검색 | 불필요 |
 
 ### GitHub MCP 설정 (권장: OAuth)
 ```bash
@@ -80,7 +78,18 @@ export GITHUB_PERSONAL_ACCESS_TOKEN=$(gh auth token)
 export FIGMA_API_KEY="your-figma-api-key"
 ```
 
-## Hooks (13개)
+### ast-grep MCP 설정
+```bash
+# ast-grep CLI 설치
+brew install ast-grep  # macOS
+cargo install ast-grep # Rust 사용 시
+
+# uv 설치 (MCP 서버용)
+brew install uv  # macOS
+pip install uv   # pip 사용 시
+```
+
+## Hooks (15개)
 
 | 훅 | 이벤트 | 기능 |
 |----|--------|------|
@@ -92,6 +101,8 @@ export FIGMA_API_KEY="your-figma-api-key"
 | `empty-task-response-detector.js` | PostToolUse | 서브에이전트 빈 응답 감지 |
 | `context-window-monitor.js` | PostToolUse | 컨텍스트 사용량 모니터링 |
 | `agent-usage-reminder.js` | PostToolUse | 에이전트 위임 리마인드 |
+| `agent-usage-logger-pre.js` | PreToolUse | **에이전트 시작 시간 기록** |
+| `agent-usage-logger.js` | PostToolUse | **에이전트 사용 로깅 (시간 포함)** |
 | `pipeline-tracker.js` | PostToolUse | **코드 수정 파이프라인 추적** |
 | `pipeline-enforcer.js` | Stop | **파이프라인 미완료 시 종료 차단** |
 | `stop-verify.js` | Stop | 세션 종료 시 검증 |
@@ -104,9 +115,16 @@ export FIGMA_API_KEY="your-figma-api-key"
 코드 파일(.js, .ts, .py 등)을 수정하면 훅이 이를 추적하고 다음 실행을 요구합니다:
 1. `code-reviewer` - 버그/보안 리뷰
 2. `test-writer` - 테스트 확인/작성
-3. `formatter` - 코드 스타일 정리
 
 모든 파이프라인 단계가 완료될 때까지 세션 종료가 차단됩니다.
+
+### Agent Usage Logging (에이전트 사용 로깅)
+`agent-usage-logger-pre.js` + `agent-usage-logger.js`가 모든 서브에이전트 호출을 추적합니다.
+
+**로그 파일** (`~/.claude/` 내):
+- `agent-usage.log` - 간단 로그 (타임스탬프, 에이전트, 소요시간)
+- `agent-usage-stats.json` - 집계 통계 (호출 횟수, 평균 소요시간)
+- `agent-usage-detailed.jsonl` - 전체 프롬프트 기록 (분석용)
 
 ```bash
 # 파이프라인 강제 건너뛰기 (비권장)
@@ -162,17 +180,20 @@ claude_agents/
 ├── .claude/
 │   ├── settings.local.json   # Claude Code 설정 (MCP, hooks 포함)
 │   ├── CLAUDE.md             # 에이전트 오케스트레이션 규칙
-│   └── agents/               # 서브에이전트 정의 (10개)
-│       ├── oracle.md
-│       ├── planner.md
-│       ├── explore.md
-│       ├── code-reviewer.md
-│       ├── frontend-designer.md
-│       ├── librarian.md
-│       ├── debugger.md
-│       ├── test-writer.md
-│       ├── refactorer.md
-│       └── formatter.md
+│   ├── agents/               # 서브에이전트 정의 (8개)
+│   │   ├── oracle.md
+│   │   ├── explore.md
+│   │   ├── code-reviewer.md
+│   │   ├── frontend-designer.md
+│   │   ├── librarian.md
+│   │   ├── debugger.md
+│   │   ├── test-writer.md
+│   │   └── refactorer.md
+│   └── ast-grep/             # AST 기반 코드 분석 규칙
+│       ├── sgconfig.yaml
+│       └── rules/
+│           ├── security/     # XSS, SQL injection, eval 등
+│           └── quality/      # console.log, any type 등
 ├── hooks/                    # 이벤트 기반 훅
 ├── skills/                   # 슬래시 커맨드
 ├── mcp/
@@ -209,3 +230,5 @@ cp -r skills/* ~/.claude/skills/
 - [Context7 MCP](https://github.com/upstash/context7)
 - [Figma MCP](https://github.com/GLips/Figma-Context-MCP)
 - [GitHub MCP](https://github.com/modelcontextprotocol/servers)
+- [ast-grep](https://ast-grep.github.io/)
+- [ast-grep MCP](https://github.com/ast-grep/ast-grep-mcp)

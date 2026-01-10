@@ -2,7 +2,7 @@
 
 Automatic setup tool for Claude Code subagents.
 
-Applies **10 subagents**, **MCP servers**, and **13 automation hooks** to your local Claude Code environment.
+Applies **8 subagents**, **MCP servers**, and **15 automation hooks** to your local Claude Code environment.
 
 [한국어 README](./README.ko.md)
 
@@ -25,12 +25,11 @@ The install script will:
 - Backup existing `settings.json`
 - Copy agents, hooks, skills, and MCP configuration
 
-## Subagents (10)
+## Subagents (8)
 
 | Agent | Model | Role |
 |-------|-------|------|
 | **oracle** | Opus | Architecture design, strategic advice, technical decisions |
-| **planner** | Opus | Implementation planning, task breakdown |
 | **explore** | Haiku | Fast codebase exploration (READ-ONLY) |
 | **code-reviewer** | Sonnet | Code review, bug/security review |
 | **frontend-designer** | Sonnet | Figma → code conversion |
@@ -38,7 +37,6 @@ The install script will:
 | **debugger** | Sonnet | Bug analysis, error tracking, log interpretation |
 | **test-writer** | Sonnet | Test code writing (unit, integration, e2e) |
 | **refactorer** | Sonnet | Code refactoring, structure improvement |
-| **formatter** | Haiku | Code formatting, style cleanup, lint fixes |
 
 ### Usage Examples
 ```
@@ -55,7 +53,6 @@ The install script will:
 | Error message/stack trace present | `debugger` |
 | PR review, code quality check | `code-reviewer` |
 | Project structure/file exploration | `librarian` |
-| Code formatting, import organization | `formatter` |
 | Structure changes, pattern application | `refactorer` |
 
 See [agents.md](./agents.md) for details.
@@ -102,7 +99,7 @@ pip install uv   # or via pip
 
 See [.claude/ast-grep/README.md](./.claude/ast-grep/README.md) for rules documentation.
 
-## Hooks (13)
+## Hooks (15)
 
 | Hook | Event | Function |
 |------|-------|----------|
@@ -114,6 +111,8 @@ See [.claude/ast-grep/README.md](./.claude/ast-grep/README.md) for rules documen
 | `empty-task-response-detector.js` | PostToolUse | Detect empty subagent responses |
 | `context-window-monitor.js` | PostToolUse | Context usage monitoring |
 | `agent-usage-reminder.js` | PostToolUse | Agent delegation reminder |
+| `agent-usage-logger-pre.js` | PreToolUse | **Track agent start time** |
+| `agent-usage-logger.js` | PostToolUse | **Log agent usage with duration** |
 | `pipeline-tracker.js` | PostToolUse | **Track code modifications for pipeline** |
 | `pipeline-enforcer.js` | Stop | **Block exit if pipeline incomplete** |
 | `stop-verify.js` | Stop | Verification on session end |
@@ -126,9 +125,16 @@ See [.claude/ast-grep/README.md](./.claude/ast-grep/README.md) for rules documen
 When you modify code files (.js, .ts, .py, etc.), the hooks track this and require you to run:
 1. `code-reviewer` - Review for bugs/security
 2. `test-writer` - Verify/write tests
-3. `formatter` - Clean up code style
 
 Session termination is blocked until all pipeline steps are complete.
+
+### Agent Usage Logging
+`agent-usage-logger-pre.js` + `agent-usage-logger.js` track all subagent invocations for usage analysis.
+
+**Log files** (in `~/.claude/`):
+- `agent-usage.log` - Simple log with timestamp, agent, duration
+- `agent-usage-stats.json` - Aggregated statistics (call count, avg duration)
+- `agent-usage-detailed.jsonl` - Full prompt history for analysis
 
 ```bash
 # Skip pipeline enforcement (not recommended)
@@ -184,17 +190,15 @@ claude_agents/
 ├── .claude/
 │   ├── settings.local.json   # Claude Code settings (MCP, hooks)
 │   ├── CLAUDE.md             # Agent orchestration rules
-│   ├── agents/               # Subagent definitions (10)
+│   ├── agents/               # Subagent definitions (8)
 │   │   ├── oracle.md
-│   │   ├── planner.md
 │   │   ├── explore.md
 │   │   ├── code-reviewer.md
 │   │   ├── frontend-designer.md
 │   │   ├── librarian.md
 │   │   ├── debugger.md
 │   │   ├── test-writer.md
-│   │   ├── refactorer.md
-│   │   └── formatter.md
+│   │   └── refactorer.md
 │   └── ast-grep/             # AST-based code analysis rules
 │       ├── sgconfig.yaml
 │       └── rules/
