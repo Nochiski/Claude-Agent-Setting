@@ -83,6 +83,16 @@ if (Test-Path $MCP_SOURCE) {
     Write-Host "MCP config copied to: $CLAUDE_DIR\mcp.json" -ForegroundColor Green
 }
 
+# ast-grep 규칙 복사
+$AST_GREP_DIR = "$CLAUDE_DIR\ast-grep"
+if (!(Test-Path $AST_GREP_DIR)) {
+    New-Item -ItemType Directory -Path $AST_GREP_DIR -Force | Out-Null
+}
+if (Test-Path "$SCRIPT_DIR\.claude\ast-grep") {
+    Copy-Item "$SCRIPT_DIR\.claude\ast-grep\*" $AST_GREP_DIR -Recurse -Force
+    Write-Host "ast-grep rules copied to: $AST_GREP_DIR" -ForegroundColor Green
+}
+
 Write-Host ""
 Write-Host "설치 완료!" -ForegroundColor Green
 Write-Host ""
@@ -105,4 +115,12 @@ Write-Host "  # 방법 2: PAT 직접 설정"
 Write-Host "  set GITHUB_PERSONAL_ACCESS_TOKEN=your-token"
 Write-Host ""
 Write-Host "  claude mcp add github -- npx -y @modelcontextprotocol/server-github"
+Write-Host ""
+Write-Host "ast-grep MCP 서버 사용 (선택):" -ForegroundColor Yellow
+Write-Host "  # ast-grep CLI 설치"
+Write-Host "  winget install ast-grep.ast-grep  # Windows"
+Write-Host "  cargo install ast-grep            # 또는 Rust"
+Write-Host ""
+Write-Host "  # uv 설치 (ast-grep MCP 서버용)"
+Write-Host "  pip install uv"
 Write-Host ""

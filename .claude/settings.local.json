@@ -13,6 +13,7 @@
       "Bash(winget:*)",
       "Bash(rm:*)",
       "Bash(ls:*)",
+      "Bash(ast-grep:*)",
       "WebSearch",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
@@ -21,7 +22,8 @@
       "Read(**)",
       "Glob(**)",
       "Grep(**)",
-      "Bash(bash:*)"
+      "Bash(bash:*)",
+      "mcp__ast-grep__*"
     ]
   },
   "hooks": {
@@ -145,6 +147,14 @@
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
       }
+    },
+    "ast-grep": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/ast-grep/ast-grep-mcp",
+        "ast-grep-mcp"
+      ]
     }
   }
 }

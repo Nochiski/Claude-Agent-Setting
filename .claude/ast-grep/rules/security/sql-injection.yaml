@@ -1,0 +1,10 @@
+id: security/sql-injection
+language: javascript
+severity: error
+message: "Potential SQL injection: string concatenation in query"
+note: "Use parameterized queries instead"
+rule:
+  any:
+    - pattern: $DB.query($STR + $VAR)
+    - pattern: $DB.query(`$$$`)
+    - pattern: $DB.execute($STR + $VAR)

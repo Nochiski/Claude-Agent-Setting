@@ -1,0 +1,9 @@
+id: quality/no-any-type
+language: typescript
+severity: warning
+message: "Avoid using 'any' type"
+note: "Use specific types or 'unknown' if type is truly unknown"
+rule:
+  any:
+    - pattern: ": any"
+    - pattern: "as any"

@@ -78,6 +78,14 @@ if [ -f "$MCP_SOURCE" ]; then
     echo -e "\033[32mMCP config copied to: $CLAUDE_DIR/mcp.json\033[0m"
 fi
 
+# ast-grep 규칙 복사
+AST_GREP_DIR="$CLAUDE_DIR/ast-grep"
+mkdir -p "$AST_GREP_DIR"
+if [ -d "$SCRIPT_DIR/.claude/ast-grep" ]; then
+    cp -r "$SCRIPT_DIR/.claude/ast-grep/"* "$AST_GREP_DIR/"
+    echo -e "\033[32mast-grep rules copied to: $AST_GREP_DIR\033[0m"
+fi
+
 echo ""
 echo -e "\033[32m설치 완료!\033[0m"
 echo ""
@@ -100,4 +108,13 @@ echo "  # 방법 2: PAT 직접 설정"
 echo "  export GITHUB_PERSONAL_ACCESS_TOKEN=your-token"
 echo ""
 echo "  claude mcp add github -- npx -y @modelcontextprotocol/server-github"
+echo ""
+echo -e "\033[33mast-grep MCP 서버 사용 (선택):\033[0m"
+echo "  # ast-grep CLI 설치"
+echo "  brew install ast-grep  # macOS"
+echo "  cargo install ast-grep # 또는 Rust"
+echo ""
+echo "  # uv 설치 (ast-grep MCP 서버용)"
+echo "  brew install uv  # macOS"
+echo "  pip install uv   # 또는 pip"
 echo ""

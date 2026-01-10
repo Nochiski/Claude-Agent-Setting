@@ -1,0 +1,9 @@
+ruleDirs:
+  - rules
+
+languageGlobs:
+  javascript: ["*.js", "*.jsx", "*.mjs", "*.cjs"]
+  typescript: ["*.ts", "*.tsx", "*.mts", "*.cts"]
+  python: ["*.py"]
+  go: ["*.go"]
+  rust: ["*.rs"]

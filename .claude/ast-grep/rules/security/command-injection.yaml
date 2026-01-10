@@ -1,0 +1,12 @@
+id: security/command-injection
+language: javascript
+severity: error
+message: "Potential command injection vulnerability"
+note: "Validate and sanitize user input before shell execution"
+rule:
+  any:
+    - pattern: exec($CMD + $VAR)
+    - pattern: exec(`$$$`)
+    - pattern: execSync($CMD + $VAR)
+    - pattern: execSync(`$$$`)
+    - pattern: spawn($CMD, [$$$])

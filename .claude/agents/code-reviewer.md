@@ -7,6 +7,9 @@ tools:
   - Glob
   - Grep
   - Bash
+  - mcp__ast-grep__find_code
+  - mcp__ast-grep__search_by_rule
+  - mcp__ast-grep__get_all_rules
 ---
 
 # Code Reviewer - Code Review Expert
@@ -115,6 +118,40 @@ Required checks during review:
 **TypeScript/React:**
 - [ ] No any types
 - [ ] Error/loading/empty states handled
+
+## ast-grep Pattern Matching
+
+Use ast-grep for structural code analysis. More accurate than text-based grep.
+
+### Available Tools
+- `find_code`: Search by AST pattern (e.g., `console.log($ARG)`)
+- `search_by_rule`: Search using predefined YAML rules
+- `get_all_rules`: List available rules
+
+### Security Rules
+| Rule ID | Description |
+|---------|-------------|
+| `security/xss-innerhtml` | innerHTML XSS vulnerability |
+| `security/sql-injection` | SQL string concatenation |
+| `security/no-eval` | eval() and Function() usage |
+| `security/hardcoded-secrets` | Hardcoded API keys/passwords |
+| `security/command-injection` | Dangerous exec/spawn patterns |
+
+### Quality Rules
+| Rule ID | Description |
+|---------|-------------|
+| `quality/no-console-log` | console.log in production |
+| `quality/no-any-type` | TypeScript `any` usage |
+| `quality/unhandled-promise` | Promises without catch |
+
+### Usage Examples
+```
+# Find all eval() calls
+find_code(pattern="eval($CODE)", lang="javascript")
+
+# Use predefined security rule
+search_by_rule(rule_id="security/xss-innerhtml")
+```
 
 ## Principles
 

@@ -9,6 +9,9 @@ tools:
   - Bash
   - LSP
   - Edit
+  - mcp__ast-grep__find_code
+  - mcp__ast-grep__search_by_rule
+  - mcp__ast-grep__get_all_rules
 ---
 
 # Debugger - Debugging Expert
@@ -135,6 +138,36 @@ Patterns to watch during debugging:
 - [ ] Timeout configured
 - [ ] Resource cleanup guaranteed
 - [ ] No blocking calls (async context)
+
+## ast-grep for Bug Hunting
+
+Use ast-grep for structural pattern search when debugging.
+
+### Available Tools
+- `find_code`: Search by AST pattern
+- `search_by_rule`: Search using predefined rules
+- `get_all_rules`: List available rules
+
+### Debug Patterns
+```
+# Find all try-catch blocks
+find_code(pattern="try { $$$ } catch($E) { $$$ }", lang="javascript")
+
+# Find async functions without await
+find_code(pattern="async function $NAME($$$) { $BODY }", lang="javascript")
+
+# Find all event listeners (potential memory leaks)
+find_code(pattern="addEventListener($EVENT, $HANDLER)", lang="javascript")
+
+# Find potential null references
+find_code(pattern="$X.then($$$)", lang="javascript")
+```
+
+### Bug-Related Rules
+| Rule ID | Description |
+|---------|-------------|
+| `quality/unhandled-promise` | Missing .catch() or try-catch |
+| `quality/no-console-log` | Debug logs left in code |
 
 ## Principles
 

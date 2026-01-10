@@ -1,0 +1,9 @@
+id: security/no-eval
+language: javascript
+severity: error
+message: "Dangerous: eval() or Function() can execute arbitrary code"
+note: "Avoid eval() and new Function() - find safer alternatives"
+rule:
+  any:
+    - pattern: eval($CODE)
+    - pattern: new Function($$$)
