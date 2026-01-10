@@ -1,0 +1,7 @@
+id: quality/unhandled-promise
+language: javascript
+severity: warning
+message: "Unhandled promise - missing error handling"
+note: "Add .catch() or use try-catch with async/await"
+rule:
+  pattern: $PROMISE.then($HANDLER)

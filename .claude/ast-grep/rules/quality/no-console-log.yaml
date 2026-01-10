@@ -1,0 +1,10 @@
+id: quality/no-console-log
+language: javascript
+severity: warning
+message: "Remove console.log before production"
+note: "Use proper logging library instead"
+rule:
+  any:
+    - pattern: console.log($$$)
+    - pattern: console.debug($$$)
+    - pattern: console.info($$$)

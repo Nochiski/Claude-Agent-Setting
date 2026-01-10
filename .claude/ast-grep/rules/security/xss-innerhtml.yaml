@@ -1,0 +1,10 @@
+id: security/xss-innerhtml
+language: javascript
+severity: error
+message: "Potential XSS vulnerability: innerHTML with dynamic content"
+note: "Use textContent or sanitize input before using innerHTML"
+rule:
+  any:
+    - pattern: $EL.innerHTML = $VAR
+    - pattern: $EL.innerHTML += $VAR
+    - pattern: document.write($VAR)

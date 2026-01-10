@@ -60,13 +60,14 @@ The install script will:
 
 See [agents.md](./agents.md) for details.
 
-## MCP Servers (3)
+## MCP Servers (4)
 
 | MCP | Purpose | Authentication |
 |-----|---------|----------------|
 | **Context7** | Latest library documentation lookup | Not required |
 | **Figma** | Figma design data retrieval | `FIGMA_API_KEY` required |
 | **GitHub** | Repository, issue, PR access | `gh auth login` or PAT |
+| **ast-grep** | AST-based structural code search | Not required |
 
 ### GitHub MCP Setup (Recommended: OAuth)
 ```bash
@@ -81,6 +82,25 @@ export GITHUB_PERSONAL_ACCESS_TOKEN=$(gh auth token)
 ```bash
 export FIGMA_API_KEY="your-figma-api-key"
 ```
+
+### ast-grep MCP Setup
+```bash
+# Install ast-grep CLI
+brew install ast-grep  # macOS
+cargo install ast-grep # or via Rust
+
+# Install uv (for MCP server)
+brew install uv  # macOS
+pip install uv   # or via pip
+```
+
+**Features:**
+- AST-based code pattern matching (more accurate than text search)
+- Pre-defined security rules (XSS, SQL injection, eval, secrets)
+- Pre-defined quality rules (console.log, any type, unhandled promises)
+- Used by `code-reviewer` and `debugger` agents
+
+See [.claude/ast-grep/README.md](./.claude/ast-grep/README.md) for rules documentation.
 
 ## Hooks (13)
 
@@ -164,17 +184,22 @@ claude_agents/
 ├── .claude/
 │   ├── settings.local.json   # Claude Code settings (MCP, hooks)
 │   ├── CLAUDE.md             # Agent orchestration rules
-│   └── agents/               # Subagent definitions (10)
-│       ├── oracle.md
-│       ├── planner.md
-│       ├── explore.md
-│       ├── code-reviewer.md
-│       ├── frontend-designer.md
-│       ├── librarian.md
-│       ├── debugger.md
-│       ├── test-writer.md
-│       ├── refactorer.md
-│       └── formatter.md
+│   ├── agents/               # Subagent definitions (10)
+│   │   ├── oracle.md
+│   │   ├── planner.md
+│   │   ├── explore.md
+│   │   ├── code-reviewer.md
+│   │   ├── frontend-designer.md
+│   │   ├── librarian.md
+│   │   ├── debugger.md
+│   │   ├── test-writer.md
+│   │   ├── refactorer.md
+│   │   └── formatter.md
+│   └── ast-grep/             # AST-based code analysis rules
+│       ├── sgconfig.yaml
+│       └── rules/
+│           ├── security/     # XSS, SQL injection, eval, etc.
+│           └── quality/      # console.log, any type, etc.
 ├── hooks/                    # Event-based hooks
 ├── skills/                   # Slash commands
 ├── mcp/
@@ -211,3 +236,5 @@ cp -r skills/* ~/.claude/skills/
 - [Context7 MCP](https://github.com/upstash/context7)
 - [Figma MCP](https://github.com/GLips/Figma-Context-MCP)
 - [GitHub MCP](https://github.com/modelcontextprotocol/servers)
+- [ast-grep](https://ast-grep.github.io/)
+- [ast-grep MCP](https://github.com/ast-grep/ast-grep-mcp)
