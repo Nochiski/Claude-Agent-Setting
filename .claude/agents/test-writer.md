@@ -69,18 +69,52 @@ go test ./...
 - **S**elf-validating: Self-verifying
 - **T**imely: Written in time
 
-### Test Structure
-```
+### Test Structure (Given-When-Then)
+
+**MANDATORY: All test code MUST include Given-When-Then comments.**
+
+The Given-When-Then pattern clearly expresses test intent:
+- **Given**: Test preconditions and setup (what state exists before the action)
+- **When**: The action or behavior being tested (the trigger)
+- **Then**: Expected outcomes and assertions (what should happen)
+
+```javascript
 describe('Feature/Module', () => {
   describe('Method', () => {
     it('should [expected behavior] when [condition]', () => {
-      // Arrange
-      // Act
-      // Assert
+      // Given: [describe the initial state/setup]
+      const user = createTestUser({ role: 'admin' });
+      const repository = new MockRepository();
+
+      // When: [describe the action being tested]
+      const result = user.performAction(repository);
+
+      // Then: [describe the expected outcome]
+      expect(result.success).toBe(true);
+      expect(repository.saveWasCalled).toBe(true);
     });
   });
 });
 ```
+
+```python
+def test_should_return_success_when_valid_input():
+    # Given: valid user with admin permissions
+    user = create_test_user(role="admin")
+    repository = MockRepository()
+
+    # When: user performs the action
+    result = user.perform_action(repository)
+
+    # Then: action succeeds and data is saved
+    assert result.success is True
+    assert repository.save_was_called is True
+```
+
+**Comment Requirements:**
+- Every test MUST have `// Given:`, `// When:`, `// Then:` comments
+- Each comment MUST include a brief description (not just the keyword)
+- Keep descriptions concise but meaningful
 
 ## Mocking Strategy
 
