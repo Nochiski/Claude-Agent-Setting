@@ -5,7 +5,7 @@
  *
  * Tracks:
  * - Edit/Write on code files → marks codeModified
- * - Task calls to code-reviewer/test-writer/formatter → updates pipeline status
+ * - Task calls to code-reviewer/test-writer → updates pipeline status
  */
 
 const readline = require('readline');
@@ -43,8 +43,7 @@ function createFreshState() {
     filesModified: [],
     pipelineStatus: {
       codeReviewer: false,
-      testWriter: false,
-      formatter: false
+      testWriter: false
     },
     lastModified: Date.now()
   };
@@ -117,10 +116,6 @@ async function main() {
         state.pipelineStatus.testWriter = true;
         stateChanged = true;
         console.error('[PIPELINE] test-writer executed ✓');
-      } else if (subagentType === 'formatter') {
-        state.pipelineStatus.formatter = true;
-        stateChanged = true;
-        console.error('[PIPELINE] formatter executed ✓');
       }
     }
 

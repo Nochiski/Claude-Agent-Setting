@@ -13,7 +13,6 @@ You have access to specialized subagents. **Automatically delegate** tasks to th
 | `frontend-designer` | UI implementation, Figma-to-code, component creation |
 | `librarian` | Documentation lookup, API research, finding code examples |
 | `debugger` | Bug analysis, error tracking, log interpretation, stack trace analysis |
-| `formatter` | Code formatting, style fixes, import organization, lint fixes |
 | `test-writer` | Test code writing (unit, integration, e2e), TDD, coverage improvement |
 | `refactorer` | Code refactoring, structure improvement, pattern application |
 
@@ -61,12 +60,6 @@ You have access to specialized subagents. **Automatically delegate** tasks to th
 - Log analysis needed
 - "Why this error?", "Find this bug", "Analyze logs"
 
-### Use `formatter` when:
-- Code needs formatting or style fixes
-- Import organization needed
-- Lint errors to fix
-- "Clean up code", "Format", "Organize imports"
-
 ### Use `test-writer` when:
 - Test code needs to be written
 - TDD approach requested
@@ -99,14 +92,6 @@ Criteria for choosing between similar agents:
 | Specific code quality/bug review | `code-reviewer` |
 | Security vulnerability analysis | `code-reviewer` |
 
-### Code modification: `formatter` vs `refactorer`
-| Situation | Choice |
-|-----------|--------|
-| Indentation, style, import cleanup | `formatter` |
-| Lint error fixes | `formatter` |
-| Structure changes, pattern application | `refactorer` |
-| Duplicate removal, function extraction | `refactorer` |
-
 ## Delegation Pattern
 
 When delegating, use the Task tool with the appropriate subagent:
@@ -127,7 +112,6 @@ Run independent tasks with multiple subagents in parallel for efficiency.
 | `oracle` + `librarian` | Architecture review + documentation research |
 | `planner` + `librarian` | Implementation plan + technical research |
 | `debugger` + `librarian` | Bug analysis + related doc search |
-| `formatter` + `test-writer` | Code cleanup + add tests |
 
 ### Sequential Execution Required
 | Order | Reason |
