@@ -213,8 +213,27 @@ All subagents follow this common structure:
 - Ignoring subagent results and starting from scratch
 - Repeating same work "for verification"
 
-### Allowed Actions
-- Summarizing/relaying subagent results to user
+### Required Actions (MUST do)
+- **Summarize and present subagent results to user** - 서브에이전트 결과는 반드시 사용자에게 요약 전달
+- 핵심 발견사항, 액션 아이템, 파일 참조를 포함하여 정리
+
+### Result Presentation Format
+서브에이전트 결과 수신 후 오케스트레이터가 제시할 형식:
+```markdown
+## [Subagent Type] Results Summary
+
+### Key Findings
+- [주요 발견사항 bullet points]
+
+### Action Items (if any)
+- [ ] 항목 1
+- [ ] 항목 2
+
+### Details
+[핵심 정보만 압축하여 전달]
+```
+
+### Optional Actions
 - Proceeding to next step based on results
 - Delegating to **different** subagent for additional info
 - Re-searching only when user explicitly requests
@@ -231,3 +250,4 @@ When subagent results seem insufficient:
 - Use subagents for their specialized expertise
 - Main agent coordinates, subagents execute
 - **Trust subagent results - do not redo their work**
+

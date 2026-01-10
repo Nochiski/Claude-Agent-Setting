@@ -8,12 +8,22 @@
  * 2. Check if test files exist
  * 3. Run tests
  * 4. Block commit on failure
+ *
+ * Skip options:
+ * - TEST_SKIP=true environment variable
+ * - git commit --no-verify flag
  */
 
 const { execSync, spawnSync } = require('child_process');
 const readline = require('readline');
 const fs = require('fs');
 const path = require('path');
+
+// Skip configuration
+const SKIP_CONFIG = {
+  envVar: 'TEST_SKIP',
+  noVerifyFlag: '--no-verify'
+};
 
 // Test framework configurations
 const TEST_CONFIGS = [
@@ -159,6 +169,24 @@ function isGitCommitCommand(command) {
   return patterns.some(p => p.test(command));
 }
 
+function shouldSkipTests(command) {
+  // Check TEST_SKIP environment variable
+  if (process.env[SKIP_CONFIG.envVar] === 'true') {
+    console.error('[pre-commit-test] WARNING: Tests skipped via TEST_SKIP=true');
+    console.error('[pre-commit-test] Remember to run tests before pushing!');
+    return true;
+  }
+
+  // Check --no-verify flag in command
+  if (command && command.includes(SKIP_CONFIG.noVerifyFlag)) {
+    console.error('[pre-commit-test] WARNING: Tests skipped via --no-verify flag');
+    console.error('[pre-commit-test] Remember to run tests before pushing!');
+    return true;
+  }
+
+  return false;
+}
+
 async function main() {
   const rl = readline.createInterface({
     input: process.stdin,
@@ -181,6 +209,12 @@ async function main() {
 
     if (toolName !== 'Bash' || !isGitCommitCommand(command)) {
       // Pass through if not git commit
+      console.log(JSON.stringify(data));
+      return;
+    }
+
+    // Check if tests should be skipped
+    if (shouldSkipTests(command)) {
       console.log(JSON.stringify(data));
       return;
     }
@@ -234,3 +268,4 @@ async function main() {
 }
 
 main();
+
