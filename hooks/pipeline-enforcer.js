@@ -5,7 +5,7 @@
  *
  * Checks:
  * - If code was modified (codeModified: true)
- * - If pipeline agents were called (code-reviewer, test-writer, formatter)
+ * - If pipeline agents were called (code-reviewer, test-writer)
  * - Blocks with exit code 2 if pipeline incomplete
  */
 
@@ -43,7 +43,6 @@ function getMissingSteps(pipelineStatus) {
   const missing = [];
   if (!pipelineStatus.codeReviewer) missing.push('code-reviewer');
   if (!pipelineStatus.testWriter) missing.push('test-writer');
-  if (!pipelineStatus.formatter) missing.push('formatter');
   return missing;
 }
 

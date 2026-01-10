@@ -7,6 +7,7 @@ tools:
   - Glob
   - Grep
   - Bash
+  - LSP
   - mcp__ast-grep__find_code
   - mcp__ast-grep__search_by_rule
   - mcp__ast-grep__get_all_rules
@@ -152,6 +153,27 @@ find_code(pattern="eval($CODE)", lang="javascript")
 # Use predefined security rule
 search_by_rule(rule_id="security/xss-innerhtml")
 ```
+
+## LSP Tools Usage
+
+Claude Code 내장 LSP 도구를 활용하여 정확한 코드 분석 수행:
+
+### 사용 가능한 LSP 도구
+| 도구 | 설명 |
+|------|------|
+| `goToDefinition` | 심볼 정의 위치 확인 |
+| `findReferences` | 모든 참조 찾기 |
+| `hover` | 타입 정보/문서 확인 |
+| `getDiagnostics` | 에러/경고 감지 |
+
+### 리뷰 시 LSP 활용
+1. 변경된 함수/클래스의 모든 참조 확인 (`findReferences`)
+2. 타입 정보 확인으로 정확한 분석 (`hover`)
+3. 코드 작성 후 진단 실행 (`getDiagnostics`)
+
+### 활성화 요구사항
+- 환경변수: `ENABLE_LSP_TOOL=1`
+- 언어 서버 설치: pyright, typescript-language-server, rust-analyzer 등
 
 ## Principles
 
