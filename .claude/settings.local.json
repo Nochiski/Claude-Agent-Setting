@@ -23,7 +23,8 @@
       "Glob(**)",
       "Grep(**)",
       "Bash(bash:*)",
-      "mcp__ast-grep__*"
+      "mcp__ast-grep__*",
+      "Bash(./install.sh)"
     ]
   },
   "hooks": {
@@ -34,6 +35,15 @@
           {
             "type": "command",
             "command": "node \"%USERPROFILE%\\.claude\\hooks\\pre-commit-test.js\""
+          }
+        ]
+      },
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\agent-usage-logger-pre.js\""
           }
         ]
       }
@@ -72,6 +82,10 @@
           {
             "type": "command",
             "command": "node \"%USERPROFILE%\\.claude\\hooks\\empty-task-response-detector.js\""
+          },
+          {
+            "type": "command",
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\agent-usage-logger.js\""
           }
         ]
       },

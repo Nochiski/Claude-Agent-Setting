@@ -9,7 +9,6 @@ You have access to specialized subagents. **Automatically delegate** tasks to th
 | `oracle` | Architecture decisions, tech stack choices, complex design reviews, strategic planning |
 | `explore` | Quick codebase navigation, file discovery, pattern search (READ-ONLY, fast) |
 | `code-reviewer` | Code review requests, PR reviews, security audits, bug hunting |
-| `planner` | Implementation planning, task breakdown, project scoping |
 | `frontend-designer` | UI implementation, Figma-to-code, component creation |
 | `librarian` | Documentation lookup, API research, finding code examples |
 | `debugger` | Bug analysis, error tracking, log interpretation, stack trace analysis |
@@ -35,11 +34,6 @@ You have access to specialized subagents. **Automatically delegate** tasks to th
 - Looking for bugs or security issues
 - Code quality assessment
 - "Review this code", "Check for bugs"
-
-### Use `planner` when:
-- User describes a feature to implement
-- Breaking down complex tasks
-- "How to implement this?", "Make a plan"
 
 ### Use `frontend-designer` when:
 - UI/UX implementation tasks
@@ -110,13 +104,11 @@ Run independent tasks with multiple subagents in parallel for efficiency.
 |-------------|--------------|
 | `code-reviewer` + `test-writer` | Review code while writing tests |
 | `oracle` + `librarian` | Architecture review + documentation research |
-| `planner` + `librarian` | Implementation plan + technical research |
 | `debugger` + `librarian` | Bug analysis + related doc search |
 
 ### Sequential Execution Required
 | Order | Reason |
 |-------|--------|
-| `planner` → `frontend-designer` | Implement after plan complete |
 | `code-reviewer` → `refactorer` | Refactor based on review results |
 | `debugger` → `test-writer` | Write regression tests after bug fix |
 
@@ -127,8 +119,8 @@ Task(subagent_type="code-reviewer", prompt="...")
 Task(subagent_type="test-writer", prompt="...")
 
 # Sequential execution (wait for result, then next)
-result = Task(subagent_type="planner", prompt="...")
-Task(subagent_type="frontend-designer", prompt=f"Based on plan: {result}...")
+result = Task(subagent_type="code-reviewer", prompt="...")
+Task(subagent_type="refactorer", prompt=f"Based on review: {result}...")
 ```
 
 ## Output Format Guide
