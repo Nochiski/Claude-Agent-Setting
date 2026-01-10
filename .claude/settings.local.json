@@ -20,7 +20,8 @@
       "WebFetch(domain:news.hada.io)",
       "Read(**)",
       "Glob(**)",
-      "Grep(**)"
+      "Grep(**)",
+      "Bash(bash:*)"
     ]
   },
   "hooks": {
