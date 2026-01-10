@@ -23,11 +23,21 @@ if [ -f "$SETTINGS_FILE" ]; then
     echo -e "\033[33mBackup created: $BACKUP_FILE\033[0m"
 fi
 
-# 새 설정 복사
+# 새 설정 복사 및 경로 변환
 SOURCE_SETTINGS="$SCRIPT_DIR/.claude/settings.local.json"
 if [ -f "$SOURCE_SETTINGS" ]; then
     cp "$SOURCE_SETTINGS" "$SETTINGS_FILE"
-    echo -e "\033[32mSettings copied to: $SETTINGS_FILE\033[0m"
+
+    # Windows 경로를 Unix 경로로 변환
+    # %USERPROFILE%\\.claude\\ -> $HOME/.claude/
+    sed -i '' 's|%USERPROFILE%\\\\.claude\\\\|$HOME/.claude/|g' "$SETTINGS_FILE"
+    # 남은 백슬래시를 슬래시로 변환
+    sed -i '' 's|\\\\|/|g' "$SETTINGS_FILE"
+    # cmd /c 를 직접 실행으로 변환 (figma MCP)
+    sed -i '' 's|"command": "cmd",|"command": "npx",|g' "$SETTINGS_FILE"
+    sed -i '' 's|"/c", "npx", "-y",|"-y",|g' "$SETTINGS_FILE"
+
+    echo -e "\033[32mSettings copied to: $SETTINGS_FILE (paths converted for Unix)\033[0m"
 fi
 
 # hooks 디렉토리 복사
