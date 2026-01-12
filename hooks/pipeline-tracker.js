@@ -87,6 +87,18 @@ async function main() {
 
   try {
     const data = JSON.parse(input);
+
+    // DEBUG: Log PostToolUse data structure to diagnose pipeline tracking issues
+    // See: https://github.com/Nochiski/Claude-Agent-Setting/issues/7
+    if (process.env.PIPELINE_DEBUG === 'true') {
+      console.error('[PIPELINE-DEBUG] =============================');
+      console.error('[PIPELINE-DEBUG] tool_name:', data.tool_name);
+      console.error('[PIPELINE-DEBUG] has tool_input:', !!data.tool_input);
+      console.error('[PIPELINE-DEBUG] tool_input:', JSON.stringify(data.tool_input || {}, null, 2));
+      console.error('[PIPELINE-DEBUG] all keys:', Object.keys(data).join(', '));
+      console.error('[PIPELINE-DEBUG] =============================');
+    }
+
     const state = loadState();
     let stateChanged = false;
 
