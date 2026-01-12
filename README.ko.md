@@ -38,29 +38,23 @@ bash install.sh
 
 ## 에이전트 (9개)
 
-| 에이전트 | 별칭 | 모델 | 역할 |
-|---------|-----|------|------|
-| **odin** | oracle | Opus | 아키텍처, 전략, 기술 결정 |
-| **huginn** | explore | Haiku | 빠른 코드베이스 탐색 (읽기 전용) |
-| **heimdall** | code-reviewer | Sonnet | 코드 리뷰, 보안 감사 |
-| **mimir** | librarian | Sonnet | 문서 검색, 리서치 |
-| **forseti** | debugger | Sonnet | 버그 분석, 에러 추적 |
-| **freya** | frontend-designer | Sonnet | UI/UX, Figma → 코드 |
-| **tyr** | test-writer | Sonnet | 테스트 코드 작성 |
-| **baldur** | refactorer | Sonnet | 코드 리팩토링 |
-| **loki** | plan-reviewer | Opus | 계획 검토, 리스크 탐지 |
+| 에이전트 | 모델 | 역할 |
+|---------|------|------|
+| **odin** | Opus | 아키텍처, 전략, 기술 결정 |
+| **huginn** | Haiku | 빠른 코드베이스 탐색 (읽기 전용) |
+| **heimdall** | Sonnet | 코드 리뷰, 보안 감사 |
+| **mimir** | Sonnet | 문서 검색, 리서치 |
+| **forseti** | Sonnet | 버그 분석, 에러 추적 |
+| **freya** | Sonnet | UI/UX, Figma → 코드 |
+| **tyr** | Sonnet | 테스트 코드 작성 |
+| **baldur** | Sonnet | 코드 리팩토링 |
+| **loki** | Opus | 계획 검토, 리스크 탐지 |
 
 ### 사용법
 ```
 "odin에게 이 아키텍처 검토 요청해"
 "heimdall에게 이 코드 리뷰 맡겨"
 "loki에게 이 계획 검토 받아"
-```
-
-이름과 별칭 모두 사용 가능:
-```
-Task(subagent_type="heimdall", ...)  # 기본 (권장)
-Task(subagent_type="code-reviewer", ...)  # 별칭 (지원)
 ```
 
 ## 스킬 (9개)

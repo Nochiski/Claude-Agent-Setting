@@ -38,29 +38,23 @@ bash install.sh
 
 ## Agents (9)
 
-| Agent | Alias | Model | Role |
-|-------|-------|-------|------|
-| **odin** | oracle | Opus | Architecture, strategy, technical decisions |
-| **huginn** | explore | Haiku | Fast codebase exploration (READ-ONLY) |
-| **heimdall** | code-reviewer | Sonnet | Code review, security audit |
-| **mimir** | librarian | Sonnet | Documentation search, research |
-| **forseti** | debugger | Sonnet | Bug analysis, error tracking |
-| **freya** | frontend-designer | Sonnet | UI/UX, Figma → code |
-| **tyr** | test-writer | Sonnet | Test code writing |
-| **baldur** | refactorer | Sonnet | Code refactoring |
-| **loki** | plan-reviewer | Opus | Plan review, risk detection |
+| Agent | Model | Role |
+|-------|-------|------|
+| **odin** | Opus | Architecture, strategy, technical decisions |
+| **huginn** | Haiku | Fast codebase exploration (READ-ONLY) |
+| **heimdall** | Sonnet | Code review, security audit |
+| **mimir** | Sonnet | Documentation search, research |
+| **forseti** | Sonnet | Bug analysis, error tracking |
+| **freya** | Sonnet | UI/UX, Figma → code |
+| **tyr** | Sonnet | Test code writing |
+| **baldur** | Sonnet | Code refactoring |
+| **loki** | Opus | Plan review, risk detection |
 
 ### Usage
 ```
 "Ask odin to review this architecture"
 "Have heimdall review this code"
 "Get loki to review this plan"
-```
-
-Both names and aliases work:
-```
-Task(subagent_type="heimdall", ...)  # Primary (preferred)
-Task(subagent_type="code-reviewer", ...)  # Alias (supported)
 ```
 
 ## Skills (9)
