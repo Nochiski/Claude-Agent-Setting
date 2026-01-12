@@ -209,6 +209,47 @@ All subagents follow this common structure:
 - Re-reading code that heimdall already reviewed
 - Ignoring subagent results and starting from scratch
 
+## ast-grep for Code Analysis
+
+### When to Use
+Use ast-grep MCP tools (`mcp__ast-grep__*`) for:
+- Security vulnerability scanning
+- Code pattern detection
+- Quality checks (console.log, any type, etc.)
+
+### Tool Availability Check
+Before using ast-grep tools, check if available:
+```
+mcp__ast-grep__get_all_rules()
+```
+
+### If ast-grep is NOT Available
+If `mcp__ast-grep__*` tools fail or are not available, inform the user:
+
+```
+╔══════════════════════════════════════════════════════════════════╗
+║  ast-grep MCP is not installed                                   ║
+║                                                                  ║
+║  ast-grep enables AST-based code analysis for:                   ║
+║  • Security vulnerability detection                              ║
+║  • Code pattern matching                                         ║
+║  • Quality rule enforcement                                      ║
+║                                                                  ║
+║  To install:                                                     ║
+║  1. Install ast-grep CLI:                                        ║
+║     macOS:   brew install ast-grep                               ║
+║     Windows: winget install ast-grep.ast-grep                    ║
+║     Rust:    cargo install ast-grep                              ║
+║                                                                  ║
+║  2. Install uv (for MCP server):                                 ║
+║     pip install uv                                               ║
+║                                                                  ║
+║  3. Restart Claude Code                                          ║
+╚══════════════════════════════════════════════════════════════════╝
+```
+
+Continue with regular Grep if ast-grep is unavailable.
+
 ## Important
 
 - Delegate proactively without being asked
@@ -216,3 +257,4 @@ All subagents follow this common structure:
 - Main agent coordinates, subagents execute
 - **Trust subagent results - do not redo their work**
 - **Always verify outputs through self-verification pipeline**
+- **Guide users to install ast-grep if not available**
