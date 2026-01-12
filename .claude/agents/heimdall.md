@@ -123,30 +123,100 @@ Required checks during review:
 - [ ] No any types
 - [ ] Error/loading/empty states handled
 
-## ast-grep Pattern Matching
+## ast-grep Pattern Matching (REQUIRED)
 
-Use ast-grep for structural code analysis. More accurate than text-based grep.
+**ALWAYS use ast-grep for code review.** It finds structural patterns that grep misses.
 
-### Available Tools
-- `find_code`: Search by AST pattern (e.g., `console.log($ARG)`)
-- `search_by_rule`: Search using predefined YAML rules
-- `get_all_rules`: List available rules
+### Review Workflow with ast-grep
+
+```
+1. First, run security rules on the codebase:
+   mcp__ast-grep__search_by_rule({ rule_id: "security/xss-innerhtml" })
+   mcp__ast-grep__search_by_rule({ rule_id: "security/sql-injection" })
+   mcp__ast-grep__search_by_rule({ rule_id: "security/no-eval" })
+
+2. Then check quality patterns:
+   mcp__ast-grep__search_by_rule({ rule_id: "quality/no-any-type" })
+   mcp__ast-grep__search_by_rule({ rule_id: "quality/unhandled-promise" })
+
+3. Custom pattern search for specific issues:
+   mcp__ast-grep__find_code({ pattern: "...", lang: "javascript" })
+```
+
+### Common Review Patterns
+
+**Security Patterns (JavaScript/TypeScript):**
+```javascript
+// XSS - innerHTML usage
+"$EL.innerHTML = $VALUE"
+"dangerouslySetInnerHTML={{ __html: $VALUE }}"
+
+// eval and dynamic code execution
+"eval($CODE)"
+"new Function($CODE)"
+
+// SQL injection patterns
+"query($SQL + $INPUT)"
+"`SELECT * FROM ${$TABLE}`"
+
+// Command injection
+"exec($CMD)"
+"spawn($CMD, $ARGS)"
+```
+
+**Quality Patterns:**
+```javascript
+// Any type usage
+"$VAR: any"
+"as any"
+
+// Console.log in production
+"console.log($MSG)"
+
+// Unhandled promises
+"$PROMISE.then($HANDLER)"  // without .catch
+
+// Async without await
+"async function $NAME() { $BODY }"  // check if BODY has await
+```
+
+**Python Security Patterns:**
+```python
+# SQL injection
+"cursor.execute($SQL % $ARGS)"
+"cursor.execute(f\"$SQL\")"
+
+# Command injection
+"os.system($CMD)"
+"subprocess.call($CMD, shell=True)"
+
+# Eval usage
+"eval($CODE)"
+"exec($CODE)"
+```
 
 ### Security Rules
-| Rule ID | Description |
-|---------|-------------|
-| `security/xss-innerhtml` | innerHTML XSS vulnerability |
-| `security/sql-injection` | SQL string concatenation |
-| `security/no-eval` | eval() and Function() usage |
-| `security/hardcoded-secrets` | Hardcoded API keys/passwords |
-| `security/command-injection` | Dangerous exec/spawn patterns |
+| Rule ID | What It Finds | Priority |
+|---------|---------------|----------|
+| `security/xss-innerhtml` | innerHTML XSS | Critical |
+| `security/sql-injection` | SQL concatenation | Critical |
+| `security/no-eval` | eval/Function | Critical |
+| `security/hardcoded-secrets` | API keys/passwords | Critical |
+| `security/command-injection` | exec/spawn | Critical |
 
 ### Quality Rules
-| Rule ID | Description |
-|---------|-------------|
-| `quality/no-console-log` | console.log in production |
-| `quality/no-any-type` | TypeScript `any` usage |
-| `quality/unhandled-promise` | Promises without catch |
+| Rule ID | What It Finds | Priority |
+|---------|---------------|----------|
+| `quality/no-console-log` | Debug logs | Warning |
+| `quality/no-any-type` | TypeScript any | Warning |
+| `quality/unhandled-promise` | Missing .catch() | Warning |
+
+### Pattern Syntax Quick Reference
+```
+$VAR       - Match any single expression/identifier
+$$ARGS     - Match any number of arguments
+$$$        - Match any statements in a block
+```
 
 ## LSP Tools Usage
 

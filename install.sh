@@ -1,120 +1,119 @@
 #!/bin/bash
-# Claude Code Agents - Unix 설치 스크립트
-# 실행: bash install.sh
+# Claude Agent Setting - Unix Installation Script
+# Run: bash install.sh
 
 set -e
 
 CLAUDE_DIR="$HOME/.claude"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo -e "\033[36mClaude Code Agents 설치 시작...\033[0m"
+echo -e "\033[36m"
+echo "╔══════════════════════════════════════════════════════════════╗"
+echo "║       Claude Agent Setting - Installation                    ║"
+echo "║       Self-Verification Pipeline & Norse Agents              ║"
+echo "╚══════════════════════════════════════════════════════════════╝"
+echo -e "\033[0m"
 
-# .claude 디렉토리 생성
+# Create .claude directory
 if [ ! -d "$CLAUDE_DIR" ]; then
     mkdir -p "$CLAUDE_DIR"
-    echo -e "\033[32mCreated: $CLAUDE_DIR\033[0m"
+    echo -e "\033[32m✓ Created: $CLAUDE_DIR\033[0m"
 fi
 
-# settings.json 백업 및 병합
+# Backup existing settings.json
 SETTINGS_FILE="$CLAUDE_DIR/settings.json"
 if [ -f "$SETTINGS_FILE" ]; then
     BACKUP_FILE="$CLAUDE_DIR/settings.backup.$(date +%Y%m%d_%H%M%S).json"
     cp "$SETTINGS_FILE" "$BACKUP_FILE"
-    echo -e "\033[33mBackup created: $BACKUP_FILE\033[0m"
+    echo -e "\033[33m⚠ Backup created: $BACKUP_FILE\033[0m"
 fi
 
-# 새 설정 복사 및 경로 변환
+# Copy and convert settings
 SOURCE_SETTINGS="$SCRIPT_DIR/.claude/settings.local.json"
 if [ -f "$SOURCE_SETTINGS" ]; then
     cp "$SOURCE_SETTINGS" "$SETTINGS_FILE"
 
-    # Windows 경로를 Unix 경로로 변환
-    # %USERPROFILE%\\.claude\\ -> $HOME/.claude/
-    sed -i '' 's|%USERPROFILE%\\\\.claude\\\\|$HOME/.claude/|g' "$SETTINGS_FILE"
-    # 남은 백슬래시를 슬래시로 변환
-    sed -i '' 's|\\\\|/|g' "$SETTINGS_FILE"
-    # cmd /c 를 직접 실행으로 변환 (figma MCP)
-    sed -i '' 's|"command": "cmd",|"command": "npx",|g' "$SETTINGS_FILE"
-    sed -i '' 's|"/c", "npx", "-y",|"-y",|g' "$SETTINGS_FILE"
+    # Convert Windows paths to Unix paths
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS
+        sed -i '' 's|%USERPROFILE%\\\\.claude\\\\|'"$HOME"'/.claude/|g' "$SETTINGS_FILE"
+        sed -i '' 's|\\\\|/|g' "$SETTINGS_FILE"
+        sed -i '' 's|"command": "cmd",|"command": "npx",|g' "$SETTINGS_FILE"
+        sed -i '' 's|"/c", "npx", "-y",|"-y",|g' "$SETTINGS_FILE"
+    else
+        # Linux
+        sed -i 's|%USERPROFILE%\\\\.claude\\\\|'"$HOME"'/.claude/|g' "$SETTINGS_FILE"
+        sed -i 's|\\\\|/|g' "$SETTINGS_FILE"
+        sed -i 's|"command": "cmd",|"command": "npx",|g' "$SETTINGS_FILE"
+        sed -i 's|"/c", "npx", "-y",|"-y",|g' "$SETTINGS_FILE"
+    fi
 
-    echo -e "\033[32mSettings copied to: $SETTINGS_FILE (paths converted for Unix)\033[0m"
+    echo -e "\033[32m✓ Settings installed: $SETTINGS_FILE\033[0m"
 fi
 
-# hooks 디렉토리 복사
+# Copy hooks directory (with subdirectories)
 HOOKS_DIR="$CLAUDE_DIR/hooks"
-mkdir -p "$HOOKS_DIR"
 if [ -d "$SCRIPT_DIR/hooks" ]; then
-    cp -r "$SCRIPT_DIR/hooks/"* "$HOOKS_DIR/" 2>/dev/null || true
-    echo -e "\033[32mHooks copied to: $HOOKS_DIR\033[0m"
+    rm -rf "$HOOKS_DIR"
+    cp -r "$SCRIPT_DIR/hooks" "$HOOKS_DIR"
+    echo -e "\033[32m✓ Hooks installed: $HOOKS_DIR\033[0m"
 fi
 
-# skills 디렉토리 복사
+# Copy skills directory
 SKILLS_DIR="$CLAUDE_DIR/skills"
-mkdir -p "$SKILLS_DIR"
-if [ -d "$SCRIPT_DIR/skills" ] && [ "$(ls -A $SCRIPT_DIR/skills 2>/dev/null)" ]; then
-    cp -r "$SCRIPT_DIR/skills/"* "$SKILLS_DIR/"
-    echo -e "\033[32mSkills copied to: $SKILLS_DIR\033[0m"
+if [ -d "$SCRIPT_DIR/.claude/skills" ]; then
+    rm -rf "$SKILLS_DIR"
+    cp -r "$SCRIPT_DIR/.claude/skills" "$SKILLS_DIR"
+    echo -e "\033[32m✓ Skills installed: $SKILLS_DIR\033[0m"
 fi
 
-# agents 디렉토리 복사 (서브에이전트)
+# Copy agents directory (Norse mythology agents)
 AGENTS_DIR="$CLAUDE_DIR/agents"
-mkdir -p "$AGENTS_DIR"
-if [ -d "$SCRIPT_DIR/.claude/agents" ] && [ "$(ls -A $SCRIPT_DIR/.claude/agents 2>/dev/null)" ]; then
-    cp -r "$SCRIPT_DIR/.claude/agents/"* "$AGENTS_DIR/"
-    echo -e "\033[32mAgents copied to: $AGENTS_DIR\033[0m"
+if [ -d "$SCRIPT_DIR/.claude/agents" ]; then
+    rm -rf "$AGENTS_DIR"
+    cp -r "$SCRIPT_DIR/.claude/agents" "$AGENTS_DIR"
+    echo -e "\033[32m✓ Agents installed: $AGENTS_DIR\033[0m"
 fi
 
-# CLAUDE.md 복사 (에이전트 오케스트레이션 규칙)
+# Copy CLAUDE.md (orchestration rules)
 CLAUDE_MD="$SCRIPT_DIR/.claude/CLAUDE.md"
 if [ -f "$CLAUDE_MD" ]; then
     cp "$CLAUDE_MD" "$CLAUDE_DIR/CLAUDE.md"
-    echo -e "\033[32mCLAUDE.md copied to: $CLAUDE_DIR/CLAUDE.md\033[0m"
+    echo -e "\033[32m✓ CLAUDE.md installed: $CLAUDE_DIR/CLAUDE.md\033[0m"
 fi
 
-# MCP 설정 복사
+# Copy MCP config
 MCP_SOURCE="$SCRIPT_DIR/mcp/mcp.json"
 if [ -f "$MCP_SOURCE" ]; then
     cp "$MCP_SOURCE" "$CLAUDE_DIR/mcp.json"
-    echo -e "\033[32mMCP config copied to: $CLAUDE_DIR/mcp.json\033[0m"
+    echo -e "\033[32m✓ MCP config installed: $CLAUDE_DIR/mcp.json\033[0m"
 fi
 
-# ast-grep 규칙 복사
-AST_GREP_DIR="$CLAUDE_DIR/ast-grep"
-mkdir -p "$AST_GREP_DIR"
+# Copy ast-grep rules
 if [ -d "$SCRIPT_DIR/.claude/ast-grep" ]; then
-    cp -r "$SCRIPT_DIR/.claude/ast-grep/"* "$AST_GREP_DIR/"
-    echo -e "\033[32mast-grep rules copied to: $AST_GREP_DIR\033[0m"
+    AST_GREP_DIR="$CLAUDE_DIR/ast-grep"
+    rm -rf "$AST_GREP_DIR"
+    cp -r "$SCRIPT_DIR/.claude/ast-grep" "$AST_GREP_DIR"
+    echo -e "\033[32m✓ ast-grep rules installed: $AST_GREP_DIR\033[0m"
 fi
 
 echo ""
-echo -e "\033[32m설치 완료!\033[0m"
+echo -e "\033[32m═══════════════════════════════════════════════════════════════\033[0m"
+echo -e "\033[32m  Installation Complete!\033[0m"
+echo -e "\033[32m═══════════════════════════════════════════════════════════════\033[0m"
 echo ""
-echo -e "\033[36m설정 위치: $CLAUDE_DIR\033[0m"
+echo -e "\033[36mInstalled Components:\033[0m"
+echo "  • 9 Norse Agents: odin, huginn, mimir, heimdall, forseti, freya, tyr, baldur, loki"
+echo "  • 8 Skills: sisyphus, ultrawork, deepsearch, ralph-loop, plan, review, orchestrator, analyze"
+echo "  • Self-Verification Pipeline (code→heimdall, plan→loki)"
 echo ""
-echo -e "\033[33mMCP 서버 설치 (선택):\033[0m"
-echo "  # Context7 (라이브러리 문서 조회)"
+echo -e "\033[36mConfiguration: $CLAUDE_DIR\033[0m"
+echo ""
+echo -e "\033[33mOptional MCP Servers:\033[0m"
 echo "  claude mcp add context7 -- npx -y @upstash/context7-mcp@latest"
-echo ""
-echo "  # Figma (디자인 데이터 조회 - 토큰 필요)"
-echo "  export FIGMA_ACCESS_TOKEN=your-token"
-echo "  claude mcp add figma -- npx -y @anthropic/mcp-figma"
-echo ""
-echo "  # GitHub (리포지토리, 이슈, PR 조회)"
-echo "  # 방법 1: gh CLI OAuth 로그인 사용 (권장)"
-echo "  gh auth login"
-echo "  export GITHUB_PERSONAL_ACCESS_TOKEN=\$(gh auth token)"
-echo ""
-echo "  # 방법 2: PAT 직접 설정"
-echo "  export GITHUB_PERSONAL_ACCESS_TOKEN=your-token"
-echo ""
 echo "  claude mcp add github -- npx -y @modelcontextprotocol/server-github"
 echo ""
-echo -e "\033[33mast-grep MCP 서버 사용 (선택):\033[0m"
-echo "  # ast-grep CLI 설치"
+echo -e "\033[33mOptional ast-grep:\033[0m"
 echo "  brew install ast-grep  # macOS"
-echo "  cargo install ast-grep # 또는 Rust"
-echo ""
-echo "  # uv 설치 (ast-grep MCP 서버용)"
-echo "  brew install uv  # macOS"
-echo "  pip install uv   # 또는 pip"
+echo "  pip install uv         # for ast-grep MCP server"
 echo ""
