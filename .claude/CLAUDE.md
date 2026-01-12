@@ -2,125 +2,168 @@
 
 You have access to specialized subagents. **Automatically delegate** tasks to the appropriate agent.
 
-## Available Subagents
+## Core Philosophy: Self-Verification Pipeline
 
-| Agent | Use When |
-|-------|----------|
-| `oracle` | Architecture decisions, tech stack choices, complex design reviews, strategic planning |
-| `explore` | Quick codebase navigation, file discovery, pattern search (READ-ONLY, fast) |
-| `code-reviewer` | Code review requests, PR reviews, security audits, bug hunting |
-| `frontend-designer` | UI implementation, Figma-to-code, component creation |
-| `librarian` | Documentation lookup, API research, finding code examples |
-| `debugger` | Bug analysis, error tracking, log interpretation, stack trace analysis |
-| `test-writer` | Test code writing (unit, integration, e2e), TDD, coverage improvement |
-| `refactorer` | Code refactoring, structure improvement, pattern application |
+> **"모든 출력물은 다른 에이전트의 검증을 거쳐야 한다"**
+>
+> 코드든 계획이든, 한 에이전트가 만든 결과물은 반드시 다른 에이전트가 검증합니다.
+
+| 출력물 유형 | 검증 에이전트 | 검증 내용 |
+|------------|--------------|----------|
+| 코드 수정 | `heimdall` | 코드 품질, 버그, 보안 취약점 |
+| 계획 수립 | `loki` | 완전성, 실현 가능성, 리스크 |
+
+## Available Subagents (Norse Mythology)
+
+| Agent | Alias | Use When |
+|-------|-------|----------|
+| `odin` | oracle | Architecture decisions, tech stack choices, strategic planning |
+| `huginn` | explore | Quick codebase navigation, file discovery, pattern search (READ-ONLY) |
+| `heimdall` | code-reviewer | Code review, PR reviews, security audits, bug hunting |
+| `freya` | frontend-designer | UI implementation, Figma-to-code, component creation |
+| `mimir` | librarian | Documentation lookup, API research, finding code examples |
+| `forseti` | debugger | Bug analysis, error tracking, log interpretation |
+| `tyr` | test-writer | Test code writing (unit, integration, e2e), TDD |
+| `baldur` | refactorer | Code refactoring, structure improvement |
+| `loki` | plan-reviewer | Plan review, critical analysis, risk detection |
+
+### Alias Compatibility
+
+Both Norse names and legacy aliases work:
+```
+Task(subagent_type="heimdall", ...)  # Norse name (preferred)
+Task(subagent_type="code-reviewer", ...)  # Legacy alias (supported)
+```
 
 ## Auto-Delegation Rules
 
-### Use `oracle` when:
+### Use `odin` when:
 - User asks about architecture or system design
 - Evaluating technology choices
 - Large-scale refactoring decisions
 - "Is this good design?", "Which approach is better?"
 
-### Use `explore` when:
+### Use `huginn` when:
 - Need to find files quickly
 - Searching for patterns in codebase
 - Understanding project structure
 - "Where is X implemented?", "Find files related to Y"
 
-### Use `code-reviewer` when:
+### Use `heimdall` when:
 - User asks to review code or PR
 - Looking for bugs or security issues
 - Code quality assessment
+- **After code changes** (self-verification)
 - "Review this code", "Check for bugs"
 
-### Use `frontend-designer` when:
+### Use `freya` when:
 - UI/UX implementation tasks
 - Figma links are provided
 - Component styling work
 - "Implement this design", "Create component"
 
-### Use `librarian` when:
+### Use `mimir` when:
 - Need to research documentation
 - Finding implementation examples
 - API usage questions
-- Project structure analysis
 - "How to use this library?", "Find examples"
 
-### Use `debugger` when:
+### Use `forseti` when:
 - Error messages or stack traces appear
 - User reports a bug or unexpected behavior
 - Log analysis needed
 - "Why this error?", "Find this bug", "Analyze logs"
 
-### Use `test-writer` when:
+### Use `tyr` when:
 - Test code needs to be written
 - TDD approach requested
 - Test coverage improvement needed
 - "Write tests", "Add tests", "Improve coverage"
 
-### Use `refactorer` when:
+### Use `baldur` when:
 - Code refactoring requested
 - Code structure improvement needed
 - Duplicate code removal
 - "Refactor", "Improve code", "Remove duplicates"
 
+### Use `loki` when:
+- Plan review requested
+- Critical analysis of proposals
+- Risk assessment needed
+- **After plan creation** (self-verification)
+- "Review this plan", "What could go wrong?"
+
 ## Role Disambiguation
 
-Criteria for choosing between similar agents:
-
-### Bug-related: `code-reviewer` vs `debugger`
+### Bug-related: `heimdall` vs `forseti`
 | Situation | Choice |
 |-----------|--------|
-| Error message/stack trace present | `debugger` |
-| Runtime error, "why not working?" | `debugger` |
-| PR review, code quality check | `code-reviewer` |
-| "Check for bugs" (preventive) | `code-reviewer` |
+| Error message/stack trace present | `forseti` |
+| Runtime error, "why not working?" | `forseti` |
+| PR review, code quality check | `heimdall` |
+| "Check for bugs" (preventive) | `heimdall` |
 
-### Code analysis: `librarian` vs `code-reviewer`
+### Code analysis: `mimir` vs `heimdall`
 | Situation | Choice |
 |-----------|--------|
-| Project structure/file navigation | `librarian` |
-| External library documentation | `librarian` |
-| Specific code quality/bug review | `code-reviewer` |
-| Security vulnerability analysis | `code-reviewer` |
+| Project structure/file navigation | `mimir` |
+| External library documentation | `mimir` |
+| Specific code quality/bug review | `heimdall` |
+| Security vulnerability analysis | `heimdall` |
 
-## Delegation Pattern
+### Strategic: `odin` vs `loki`
+| Situation | Choice |
+|-----------|--------|
+| Create architecture/plan | `odin` |
+| Review existing plan | `loki` |
+| "What should we do?" | `odin` |
+| "What's wrong with this plan?" | `loki` |
 
-When delegating, use the Task tool with the appropriate subagent:
+## Self-Verification Workflow
 
+### Code Changes
 ```
-Task(subagent_type="oracle", prompt="Review this architecture...")
-Task(subagent_type="code-reviewer", prompt="Review this code for bugs...")
+1. Write/Edit code
+2. Delegate to heimdall for review
+3. Fix issues found
+4. Proceed only after heimdall approval
+```
+
+### Plan Creation
+```
+1. Create plan (or delegate to odin)
+2. Delegate to loki for review
+3. Address concerns raised
+4. Execute only after loki approval
 ```
 
 ## Parallel Execution
 
-Run independent tasks with multiple subagents in parallel for efficiency.
-
 ### Parallelizable Combinations
 | Combination | Use Scenario |
 |-------------|--------------|
-| `code-reviewer` + `test-writer` | Review code while writing tests |
-| `oracle` + `librarian` | Architecture review + documentation research |
-| `debugger` + `librarian` | Bug analysis + related doc search |
+| `heimdall` + `tyr` | Review code while writing tests |
+| `odin` + `mimir` | Architecture review + documentation research |
+| `forseti` + `mimir` | Bug analysis + related doc search |
 
 ### Sequential Execution Required
 | Order | Reason |
 |-------|--------|
-| `code-reviewer` → `refactorer` | Refactor based on review results |
-| `debugger` → `test-writer` | Write regression tests after bug fix |
+| Code → `heimdall` | Verify before proceeding |
+| Plan → `loki` | Validate before execution |
+| `heimdall` → `baldur` | Refactor based on review |
+| `forseti` → `tyr` | Write regression tests after bug fix |
 
-### Usage Example
+## Delegation Pattern
+
 ```
-# Parallel execution (multiple Task calls at once)
-Task(subagent_type="code-reviewer", prompt="...")
-Task(subagent_type="test-writer", prompt="...")
+# Using Norse names (preferred)
+Task(subagent_type="odin", prompt="Review this architecture...")
+Task(subagent_type="heimdall", prompt="Review this code for bugs...")
 
-# Sequential execution (wait for result, then next)
-result = Task(subagent_type="code-reviewer", prompt="...")
-Task(subagent_type="refactorer", prompt=f"Based on review: {result}...")
+# Using legacy aliases (supported)
+Task(subagent_type="oracle", prompt="Review this architecture...")
+Task(subagent_type="code-reviewer", prompt="Review this code...")
 ```
 
 ## Output Format Guide
@@ -142,33 +185,7 @@ All subagents follow this common structure:
 
 ### References (if applicable)
 - Related file: `path/to/file.ts:123`
-- Source: [link]
 ```
-
-## Version Impact Rule
-
-**Assess and present version impact for all code change suggestions:**
-
-### Criteria
-| Change Type | Version | Example |
-|-------------|---------|---------|
-| Bug fix, internal refactoring | patch (0.0.1) | Logic fix, performance |
-| New feature, API/option addition | minor (0.1.0) | New endpoint |
-| Breaking change | major (1.0.0) | API removal, signature change |
-
-### Output Format
-```markdown
-### Version Impact
-- Recommended: patch/minor/major (0.0.1)
-- Reason: [Justification]
-
-### CHANGELOG Entry (for API/behavior/config changes)
-- Added/Changed/Fixed/Removed: [Description]
-```
-
-### Rules
-- If project has version files (pyproject.toml, package.json, etc.), follow that approach
-- CHANGELOG update suggestion required for API/behavior/config changes
 
 ## Subagent Result Trust Rules
 
@@ -178,47 +195,19 @@ All subagents follow this common structure:
 ### Trust Criteria
 | Subagent Response | Main Agent Action |
 |-------------------|-------------------|
-| "Re-verification: Not needed" | Use result as-is, no re-search |
-| "Confidence: Certain" | Adopt result without additional checks |
-| "Confidence: Partially certain" | Additional questions only if needed |
+| "Re-verification: Not needed" | Use result as-is |
+| "Confidence: Certain" | Adopt without additional checks |
+| "Confidence: Partially certain" | Additional questions if needed |
 | "Confidence: Needs verification" | Re-verification allowed |
 
+### Required Actions
+- **Summarize and present subagent results to user**
+- Include key findings, action items, file references
+
 ### Prohibited Actions
-- Re-searching files librarian already explored
-- Re-reading code that code-reviewer already reviewed
+- Re-searching files mimir already explored
+- Re-reading code that heimdall already reviewed
 - Ignoring subagent results and starting from scratch
-- Repeating same work "for verification"
-
-### Required Actions (MUST do)
-- **Summarize and present subagent results to user** - 서브에이전트 결과는 반드시 사용자에게 요약 전달
-- 핵심 발견사항, 액션 아이템, 파일 참조를 포함하여 정리
-
-### Result Presentation Format
-서브에이전트 결과 수신 후 오케스트레이터가 제시할 형식:
-```markdown
-## [Subagent Type] Results Summary
-
-### Key Findings
-- [주요 발견사항 bullet points]
-
-### Action Items (if any)
-- [ ] 항목 1
-- [ ] 항목 2
-
-### Details
-[핵심 정보만 압축하여 전달]
-```
-
-### Optional Actions
-- Proceeding to next step based on results
-- Delegating to **different** subagent for additional info
-- Re-searching only when user explicitly requests
-
-### Handling Uncertainty
-When subagent results seem insufficient:
-1. Re-delegate to same subagent with **specific additional questions**
-2. Do not redo work directly
-3. Example: `Task(subagent_type="librarian", prompt="Previous search didn't find X, please also check path Y")`
 
 ## Important
 
@@ -226,4 +215,4 @@ When subagent results seem insufficient:
 - Use subagents for their specialized expertise
 - Main agent coordinates, subagents execute
 - **Trust subagent results - do not redo their work**
-
+- **Always verify outputs through self-verification pipeline**

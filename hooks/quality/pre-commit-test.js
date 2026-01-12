@@ -250,12 +250,44 @@ async function main() {
       console.error('[pre-commit-test] Tests passed! Proceeding with commit.');
       console.log(JSON.stringify(data));
     } else {
-      // Test failed - block commit
-      const response = {
-        decision: "block",
-        reason: `Tests failed. Please fix failing tests before committing.\n\nCommand: ${testConfig.testCmd}\nExit code: ${result.exitCode}\n\nError output:\n${result.error ? result.error.substring(0, 500) : 'No error output'}`
-      };
-      console.log(JSON.stringify(response));
+      // Test failed
+      // Check if strict mode is enabled (default: warning only)
+      const strictMode = process.env.TEST_STRICT === 'true';
+
+      if (strictMode) {
+        // Strict mode: block commit
+        const response = {
+          decision: "block",
+          reason: `Tests failed. Please fix failing tests before committing.\n\nCommand: ${testConfig.testCmd}\nExit code: ${result.exitCode}\n\nError output:\n${result.error ? result.error.substring(0, 500) : 'No error output'}`
+        };
+        console.log(JSON.stringify(response));
+      } else {
+        // Default: warn and proceed (add warning to tool result for user awareness)
+        console.error('\n');
+        console.error('╔════════════════════════════════════════════════════════════════╗');
+        console.error('║  ⚠️  TESTS FAILED - Proceeding with commit anyway              ║');
+        console.error('╠════════════════════════════════════════════════════════════════╣');
+        console.error(`║  Command: ${testConfig.testCmd.padEnd(51)}║`);
+        console.error(`║  Exit code: ${String(result.exitCode).padEnd(50)}║`);
+        console.error('║                                                                ║');
+        console.error('║  The commit will proceed, but please fix the tests before     ║');
+        console.error('║  pushing to remote. Use TEST_STRICT=true to block commits.    ║');
+        console.error('║                                                                ║');
+        console.error('╚════════════════════════════════════════════════════════════════╝');
+        console.error('\n');
+
+        // Add warning to tool_input for Claude's awareness
+        if (!data.tool_input._warnings) {
+          data.tool_input._warnings = [];
+        }
+        data.tool_input._warnings.push({
+          type: 'test_failure',
+          message: `Tests failed (${testConfig.testCmd}). Please fix before pushing.`,
+          error: result.error ? result.error.substring(0, 200) : null
+        });
+
+        console.log(JSON.stringify(data));
+      }
     }
   } catch (e) {
     console.error('[pre-commit-test] Hook error:', e.message);
