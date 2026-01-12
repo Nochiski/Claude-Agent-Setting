@@ -32,7 +32,9 @@ const TEST_CONFIGS = [
   { files: ['jest.config.js', 'jest.config.ts'], testCmd: 'npx jest' },
   { files: ['vitest.config.js', 'vitest.config.ts'], testCmd: 'npx vitest run' },
 
-  // Python
+  // Python (uv projects - check first)
+  { files: ['uv.lock'], testCmd: 'uv run pytest', testDirs: ['tests', 'test'] },
+  // Python (standard)
   { files: ['pytest.ini', 'pyproject.toml', 'setup.py'], testCmd: 'pytest', testDirs: ['tests', 'test'] },
   { files: ['tox.ini'], testCmd: 'tox' },
 
