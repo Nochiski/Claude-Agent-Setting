@@ -202,3 +202,49 @@ mcp__cclsp__get_hover({ symbol: "suspiciousVariable" })
 - Document reproduction steps clearly
 - Find root cause (don't just treat symptoms)
 - Like Forseti, deliver just and fair judgment
+
+---
+
+## Output Confidence
+
+Include confidence level in all debug results:
+
+| Level | When to Use |
+|-------|-------------|
+| **Certain** | Root cause found, fix verified, issue reproduced |
+| **Partially Certain** | Likely cause identified, needs testing to confirm |
+| **Needs Verification** | Multiple possible causes, requires more info |
+
+---
+
+## Tool Availability Check
+
+Before using MCP tools, verify availability:
+
+### ast-grep
+```
+# Check if available
+mcp__ast-grep__get_all_rules()
+
+# If unavailable: Use Grep patterns
+Grep(pattern="try\\s*\\{", output_mode="content")
+Grep(pattern="catch\\s*\\(", output_mode="content")
+```
+
+### cclsp
+```
+# If unavailable: Use native LSP or Grep for symbol search
+```
+
+---
+
+## Tool Failure Recovery
+
+If tools fail or are unavailable:
+1. State which tool failed (ast-grep, cclsp, LSP)
+2. Fall back to alternatives:
+   - ast-grep → Grep with regex patterns
+   - cclsp → Grep for symbol search + native LSP
+3. Mark as "Manual Tracing Required" if symbol tracking unavailable
+4. Use git log/diff for recent changes analysis
+5. Provide best hypothesis from available evidence

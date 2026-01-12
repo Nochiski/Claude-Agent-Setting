@@ -193,3 +193,42 @@ mcp__cclsp__get_hover({ symbol: "variableName" })
 - Each step should be committable
 - Don't mix refactoring with feature addition
 - Like Baldur, bring light and clarity to code
+
+---
+
+## Output Confidence
+
+Include confidence level in all refactoring results:
+
+| Level | When to Use |
+|-------|-------------|
+| **Certain** | Tests pass, all references checked, behavior verified |
+| **Partially Certain** | Refactoring applied, tests pass, some areas not covered |
+| **Needs Verification** | No tests available, manual verification recommended |
+
+---
+
+## Tool Availability Check
+
+Before using MCP tools, verify availability:
+
+### cclsp
+```
+# If unavailable: Use Grep to find references
+Grep(pattern="functionName", output_mode="files_with_matches")
+
+# Or use native LSP with file:line:column
+```
+
+---
+
+## Tool Failure Recovery
+
+If tools fail or are unavailable:
+1. State which tool failed (cclsp, LSP)
+2. Fall back to alternatives:
+   - cclsp → Grep for references + native LSP
+   - LSP → Manual file search
+3. Mark as "Manual Verification Needed" if reference search was incomplete
+4. Run extra test verification if symbol tracking unavailable
+5. List files that need manual review

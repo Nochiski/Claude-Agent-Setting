@@ -98,3 +98,13 @@ Example: `src/utils/helper.ts:42`
 
 ### Parallel Processing
 Use 2-5 tools simultaneously based on complexity
+
+---
+
+## Large Output Handling
+
+For extensive results (>50 items or >20 files):
+1. **Summarize first**: Top 10 most relevant findings
+2. **Group by category**: By file type, module, or relevance
+3. **Offer drill-down**: "Found 45 results. Showing top 10. Ask for specific category for more."
+4. **Prioritize**: Critical/exact matches first, related items after

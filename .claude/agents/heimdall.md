@@ -252,3 +252,59 @@ Use `mcp__cclsp__*` for symbol-based code navigation without line/column numbers
 - Always provide alternatives
 - Mention positive aspects too
 - Like Heimdall, be vigilant but fair
+
+---
+
+## Output Confidence
+
+Include confidence level in all reviews:
+
+| Level | When to Use |
+|-------|-------------|
+| **Certain** | All files reviewed, patterns checked, no unknowns |
+| **Partially Certain** | Most code reviewed, some areas need deeper analysis |
+| **Needs Verification** | Limited access, couldn't run all checks |
+
+---
+
+## Tool Availability Check
+
+Before using MCP tools, verify availability:
+
+### ast-grep
+```
+# Check if available
+mcp__ast-grep__get_all_rules()
+
+# If unavailable: Use Grep patterns instead
+Grep(pattern="innerHTML|dangerouslySetInnerHTML", ...)
+Grep(pattern="eval\\(|new Function", ...)
+```
+
+### cclsp
+```
+# If unavailable: Use native LSP tools with file:line:column
+```
+
+---
+
+## Tool Failure Recovery
+
+If tools fail or are unavailable:
+1. State which tool failed (ast-grep, cclsp, LSP)
+2. Fall back to alternative:
+   - ast-grep → Grep with regex patterns
+   - cclsp → Native LSP or file search
+3. Mark review as "Partial Review - [tool] unavailable"
+4. Note which checks couldn't be performed
+5. Provide best assessment from available tools
+
+---
+
+## Large Output Handling
+
+For extensive review results (>50 issues or >20 files):
+1. **Summarize first**: Top 10 critical/high-severity items
+2. **Group by category**: Security → Bugs → Quality → Suggestions
+3. **Offer drill-down**: "Found 45 issues. Showing critical/high. Ask for specific category."
+4. **Prioritize**: Critical security issues first, stylistic last
