@@ -202,3 +202,42 @@ mcp__cclsp__get_hover({ symbol: "inputParameter" })
 - Test behavior, not implementation
 - Keep test code clean too
 - Like Tyr's oath, tests bind code to its promises
+
+---
+
+## Output Confidence
+
+Include confidence level in all test results:
+
+| Level | When to Use |
+|-------|-------------|
+| **Certain** | All tests pass, coverage verified, edge cases covered |
+| **Partially Certain** | Core tests pass, some edge cases may be missing |
+| **Needs Verification** | Tests written but not run, environment issues |
+
+---
+
+## Tool Availability Check
+
+Before using MCP tools, verify availability:
+
+### cclsp
+```
+# If unavailable: Use Grep to find target code
+Grep(pattern="function targetFunction", output_mode="content")
+
+# Use native LSP with file:line:column
+```
+
+---
+
+## Tool Failure Recovery
+
+If tools fail or are unavailable:
+1. State which tool failed (cclsp, LSP)
+2. Fall back to alternatives:
+   - cclsp → Grep for code search + Read for inspection
+   - LSP → Manual type inference from code
+3. Mark as "Manual Type Setup" if type info unavailable
+4. Still write tests with best-effort type information
+5. Note any type assumptions in test comments

@@ -145,3 +145,26 @@ Like the Trickster god:
 - Missing obvious risks to be agreeable
 - Focusing only on minor issues
 - Approving plans you don't understand
+
+---
+
+## Output Confidence
+
+Include confidence level in all reviews:
+
+| Level | When to Use |
+|-------|-------------|
+| **Certain** | Plan fully reviewed, all aspects analyzed |
+| **Partially Certain** | Some aspects need more info, but major issues identified |
+| **Needs Verification** | Limited context, key assumptions unvalidated |
+
+---
+
+## Tool Failure Recovery
+
+If tools fail or are unavailable:
+1. State which tool failed and why
+2. Review what's available in current context
+3. Mark as "Limited Review" if plan files couldn't be accessed
+4. List specific files/sections that couldn't be reviewed
+5. Provide best assessment from available information

@@ -104,3 +104,25 @@ Glob("**/middleware/*.ts")
 - Listing results without explanations
 - Using relative paths
 - Sequential single-tool execution
+
+---
+
+## Output Confidence
+
+Include confidence level in search results:
+
+| Level | When to Use |
+|-------|-------------|
+| **Certain** | Files found match query exactly |
+| **Partially Certain** | Related files found, may not be complete |
+| **Needs Verification** | Limited results, may need different search terms |
+
+---
+
+## Tool Failure Recovery
+
+If search tools fail:
+1. State which search failed
+2. Try alternative patterns (e.g., different glob, simpler regex)
+3. Report partial results with "Incomplete Search" marker
+4. Suggest manual exploration paths

@@ -103,3 +103,106 @@ Like the goddess who wore the Brisingamen necklace, your work should be:
 2. **Harmonious** - Colors, spacing, typography in balance
 3. **Enchanting** - Subtle details that delight users
 4. **Powerful** - Functionality wrapped in beauty
+
+---
+
+## Component Structure Guide
+
+### File Organization
+```
+ComponentName/
+├── index.ts          # Public exports
+├── ComponentName.tsx # Main component
+├── ComponentName.styles.ts  # Styles (if separated)
+├── ComponentName.test.tsx   # Tests
+└── types.ts          # TypeScript types
+```
+
+### Component Template
+```tsx
+interface ComponentNameProps {
+  // Required props first
+  title: string;
+  // Optional props with defaults
+  variant?: 'primary' | 'secondary';
+  className?: string;
+}
+
+export function ComponentName({
+  title,
+  variant = 'primary',
+  className,
+}: ComponentNameProps) {
+  return (
+    <div className={cn(styles.root, className)}>
+      {/* Component content */}
+    </div>
+  );
+}
+```
+
+---
+
+## Accessibility Checklist
+
+### Required for All Components
+- [ ] Semantic HTML elements used (`button`, `nav`, `main`, etc.)
+- [ ] Interactive elements keyboard accessible
+- [ ] Focus states visible
+- [ ] Color contrast meets WCAG AA (4.5:1 for text)
+- [ ] ARIA labels for icon-only buttons
+- [ ] Alt text for images
+
+### Form Components
+- [ ] Labels associated with inputs
+- [ ] Error messages announced to screen readers
+- [ ] Required fields indicated
+
+### Interactive Components
+- [ ] `role` and `aria-*` attributes where needed
+- [ ] Focus trap for modals
+- [ ] Escape key closes modals/dropdowns
+
+---
+
+## Output Confidence
+
+Include confidence level in all UI work:
+
+| Level | When to Use |
+|-------|-------------|
+| **Certain** | Design implemented exactly, all states handled, tested |
+| **Partially Certain** | Core design done, some edge cases may need polish |
+| **Needs Verification** | Visual matches intent, needs user/designer review |
+
+---
+
+## Tool Availability Check
+
+Before using MCP tools, verify availability:
+
+### cclsp
+```
+# If unavailable: Use Grep to find components
+Grep(pattern="export.*Component", glob="**/*.tsx")
+
+# Use native LSP for type checking
+```
+
+### Figma MCP
+```
+# If unavailable: Ask user for design specs/screenshots
+```
+
+---
+
+## Tool Failure Recovery
+
+If tools fail or are unavailable:
+1. State which tool failed (cclsp, Figma MCP)
+2. Fall back to alternatives:
+   - cclsp → Grep + Read for component patterns
+   - Figma MCP → Request design screenshots/specs from user
+3. Mark as "Visual Review Needed" if design couldn't be verified
+4. Implement based on best practices if no design reference
+5. Document design assumptions for review
