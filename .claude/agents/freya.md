@@ -10,7 +10,9 @@ tools:
   - Edit
   - Write
   - Bash
+  - LSP
   - mcp__figma
+  - mcp__cclsp__*
 ---
 
 # Freya - Goddess of Beauty in Code
@@ -70,6 +72,28 @@ All async UI must include:
 - Design types first, then implement
 
 ---
+
+## cclsp for Component Development
+
+Use cclsp MCP to understand existing components and patterns:
+
+### Component Analysis
+```
+# Find existing component implementations
+mcp__cclsp__find_symbol({ symbol: "Button" })
+
+# Check component usage patterns
+mcp__cclsp__find_references({ symbol: "Card" })
+
+# Get prop types
+mcp__cclsp__get_hover({ symbol: "ButtonProps" })
+```
+
+### Development Workflow with cclsp
+1. **Explore**: Find similar components with cclsp
+2. **Understand patterns**: Check how existing components are used
+3. **Match types**: Use hover to ensure prop consistency
+4. **Implement**: Create new component following patterns
 
 ## Freya's Aesthetic Principles
 

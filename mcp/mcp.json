@@ -20,6 +20,11 @@
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
       },
       "description": "GitHub 리포지토리, 이슈, PR 조회"
+    },
+    "cclsp": {
+      "command": "npx",
+      "args": ["-y", "cclsp@latest"],
+      "description": "LSP 기반 코드 분석 (심볼 검색, 정의 이동, 참조 찾기)"
     }
   }
 }

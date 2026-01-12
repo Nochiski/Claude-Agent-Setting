@@ -13,6 +13,7 @@ tools:
   - mcp__ast-grep__find_code
   - mcp__ast-grep__search_by_rule
   - mcp__ast-grep__get_all_rules
+  - mcp__cclsp__*
 ---
 
 # Forseti - The Judge of Bugs
@@ -171,6 +172,28 @@ find_code(pattern="$X.then($$$)", lang="javascript")
 |---------|-------------|
 | `quality/unhandled-promise` | Missing .catch() or try-catch |
 | `quality/no-console-log` | Debug logs left in code |
+
+## cclsp for Debugging
+
+Use cclsp MCP to trace code flow and find bug sources:
+
+### Symbol Tracing
+```
+# Find where error originates
+mcp__cclsp__go_to_definition({ symbol: "errorHandler" })
+
+# Track all usages of problematic function
+mcp__cclsp__find_references({ symbol: "buggyFunction" })
+
+# Check type info for type-related bugs
+mcp__cclsp__get_hover({ symbol: "suspiciousVariable" })
+```
+
+### Debugging Workflow with cclsp
+1. **Trace error**: Follow symbol definitions to source
+2. **Find callers**: Check all places that call the buggy code
+3. **Verify types**: Use hover to check type mismatches
+4. **Fix and verify**: Apply fix and run diagnostics
 
 ## Principles
 

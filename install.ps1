@@ -9,7 +9,7 @@ $SCRIPT_DIR = Split-Path -Parent $MyInvocation.MyCommand.Path
 Write-Host ""
 Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
 Write-Host "║       Claude Agent Setting - Installation                    ║" -ForegroundColor Cyan
-Write-Host "║       Self-Verification Pipeline & Norse Agents              ║" -ForegroundColor Cyan
+Write-Host "║       Self-Verification Pipeline & Specialized Agents        ║" -ForegroundColor Cyan
 Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 
@@ -88,14 +88,60 @@ if (Test-Path "$SCRIPT_DIR\.claude\ast-grep") {
     Write-Host "✓ ast-grep rules installed: $AST_GREP_DIR" -ForegroundColor Green
 }
 
+# Install ast-grep if not present
+$AST_GREP_INSTALLED = $false
+try {
+    $null = Get-Command ast-grep -ErrorAction Stop
+    $AST_GREP_INSTALLED = $true
+    Write-Host "✓ ast-grep already installed" -ForegroundColor Green
+} catch {
+    Write-Host ""
+    Write-Host "ast-grep is not installed." -ForegroundColor Yellow
+    Write-Host "ast-grep enables AST-based code analysis for security and quality checks." -ForegroundColor Yellow
+    Write-Host ""
+    $response = Read-Host "Install ast-grep now? (Y/n)"
+    if ($response -eq "" -or $response -eq "Y" -or $response -eq "y") {
+        Write-Host "Installing ast-grep via winget..." -ForegroundColor Cyan
+        try {
+            winget install ast-grep.ast-grep --silent --accept-package-agreements --accept-source-agreements
+            Write-Host "✓ ast-grep installed successfully" -ForegroundColor Green
+            $AST_GREP_INSTALLED = $true
+        } catch {
+            Write-Host "⚠ Failed to install ast-grep. Install manually: winget install ast-grep.ast-grep" -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "Skipped ast-grep installation" -ForegroundColor Yellow
+    }
+}
+
+# Install uv (for ast-grep MCP server) if not present
+try {
+    $null = Get-Command uv -ErrorAction Stop
+    Write-Host "✓ uv already installed" -ForegroundColor Green
+} catch {
+    if ($AST_GREP_INSTALLED) {
+        Write-Host ""
+        $response = Read-Host "Install uv (required for ast-grep MCP server)? (Y/n)"
+        if ($response -eq "" -or $response -eq "Y" -or $response -eq "y") {
+            Write-Host "Installing uv via pip..." -ForegroundColor Cyan
+            try {
+                pip install uv --quiet
+                Write-Host "✓ uv installed successfully" -ForegroundColor Green
+            } catch {
+                Write-Host "⚠ Failed to install uv. Install manually: pip install uv" -ForegroundColor Yellow
+            }
+        }
+    }
+}
+
 Write-Host ""
 Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor Green
 Write-Host "  Installation Complete!" -ForegroundColor Green
 Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor Green
 Write-Host ""
 Write-Host "Installed Components:" -ForegroundColor Cyan
-Write-Host "  • 9 Norse Agents: odin, huginn, mimir, heimdall, forseti, freya, tyr, baldur, loki"
-Write-Host "  • 8 Skills: sisyphus, ultrawork, deepsearch, ralph-loop, plan, review, orchestrator, analyze"
+Write-Host "  • 9 Agents: odin, huginn, mimir, heimdall, forseti, freya, tyr, baldur, loki"
+Write-Host "  • 9 Skills: sisyphus, ultrawork, deepsearch, ralph-loop, plan, review, orchestrator, analyze, ast-grep"
 Write-Host "  • Self-Verification Pipeline (code→heimdall, plan→loki)"
 Write-Host ""
 Write-Host "Configuration: $CLAUDE_DIR" -ForegroundColor Cyan
@@ -103,8 +149,4 @@ Write-Host ""
 Write-Host "Optional MCP Servers:" -ForegroundColor Yellow
 Write-Host "  claude mcp add context7 -- npx -y @upstash/context7-mcp@latest"
 Write-Host "  claude mcp add github -- npx -y @modelcontextprotocol/server-github"
-Write-Host ""
-Write-Host "Optional ast-grep:" -ForegroundColor Yellow
-Write-Host "  winget install ast-grep.ast-grep"
-Write-Host "  pip install uv  # for ast-grep MCP server"
 Write-Host ""

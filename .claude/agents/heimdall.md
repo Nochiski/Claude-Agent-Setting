@@ -12,6 +12,7 @@ tools:
   - mcp__ast-grep__find_code
   - mcp__ast-grep__search_by_rule
   - mcp__ast-grep__get_all_rules
+  - mcp__cclsp__*
 ---
 
 # Heimdall - The Watchman of Code
@@ -220,20 +221,30 @@ $$$        - Match any statements in a block
 
 ## LSP Tools Usage
 
-Use built-in LSP tools for precise code analysis:
+Use built-in LSP and cclsp MCP for precise code analysis.
 
-### Available LSP Tools
+### cclsp MCP Tools (Recommended)
+Use `mcp__cclsp__*` for symbol-based code navigation without line/column numbers:
+
+| Tool | Description | Usage |
+|------|-------------|-------|
+| `find_symbol` | Find symbol by name | `mcp__cclsp__find_symbol({ symbol: "UserService" })` |
+| `go_to_definition` | Jump to symbol definition | `mcp__cclsp__go_to_definition({ symbol: "handleClick" })` |
+| `find_references` | Find all symbol usages | `mcp__cclsp__find_references({ symbol: "useState" })` |
+| `get_hover` | Get type info/docs | `mcp__cclsp__get_hover({ symbol: "props" })` |
+
+### Native LSP Tools
 | Tool | Description |
 |------|-------------|
-| `goToDefinition` | Find symbol definition |
+| `goToDefinition` | Find symbol definition (requires file:line:column) |
 | `findReferences` | Find all references |
 | `hover` | Get type info/docs |
 | `getDiagnostics` | Detect errors/warnings |
 
 ### LSP During Review
-1. Check all references of changed functions/classes (`findReferences`)
-2. Verify type info for accurate analysis (`hover`)
-3. Run diagnostics after code changes (`getDiagnostics`)
+1. Use cclsp to find all references of changed functions (`mcp__cclsp__find_references`)
+2. Verify type info with hover (`mcp__cclsp__get_hover`)
+3. Run native diagnostics after code changes (`getDiagnostics`)
 
 ## Principles
 

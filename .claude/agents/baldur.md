@@ -11,6 +11,7 @@ tools:
   - Write
   - Bash
   - LSP
+  - mcp__cclsp__*
 ---
 
 # Baldur - The Purifier of Code
@@ -161,6 +162,28 @@ Change principles during refactoring:
 1. Change summary
 2. Code/patch
 3. Verification method (test/run command)
+
+## LSP Tools for Refactoring
+
+Use cclsp MCP for safe refactoring with symbol awareness:
+
+### Symbol Navigation
+```
+# Find all usages before renaming
+mcp__cclsp__find_references({ symbol: "oldFunctionName" })
+
+# Check symbol definition
+mcp__cclsp__go_to_definition({ symbol: "ClassName" })
+
+# Get type info for safe changes
+mcp__cclsp__get_hover({ symbol: "variableName" })
+```
+
+### Refactoring Workflow with cclsp
+1. **Before rename**: Find all references with cclsp
+2. **Check impact**: Verify usage locations
+3. **Refactor**: Apply changes
+4. **Verify**: Run tests and diagnostics
 
 ## Principles
 

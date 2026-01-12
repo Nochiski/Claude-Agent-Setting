@@ -10,6 +10,8 @@ tools:
   - Edit
   - Write
   - Bash
+  - LSP
+  - mcp__cclsp__*
 ---
 
 # Tyr - Guardian of Code Oaths
@@ -170,6 +172,28 @@ npm test            # Node.js
 pytest              # Python
 go test ./...       # Go
 ```
+
+## cclsp for Test Writing
+
+Use cclsp MCP to understand code before writing tests:
+
+### Code Analysis
+```
+# Find function to test
+mcp__cclsp__go_to_definition({ symbol: "targetFunction" })
+
+# Check all usages to understand behavior
+mcp__cclsp__find_references({ symbol: "targetFunction" })
+
+# Get type info for test data setup
+mcp__cclsp__get_hover({ symbol: "inputParameter" })
+```
+
+### Test Writing Workflow with cclsp
+1. **Understand**: Use cclsp to explore target code
+2. **Find edge cases**: Check all call sites for usage patterns
+3. **Setup types**: Use hover to get correct type info
+4. **Write tests**: Apply Given-When-Then pattern
 
 ## Principles
 
