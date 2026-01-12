@@ -1,15 +1,209 @@
-# Claude Code Hooks
+# Claude Code Hooks System
 
-이벤트 기반 자동화 훅 설정
+자가 검증(Self-Verification) 파이프라인과 지능형 오케스트레이션을 위한 훅 시스템입니다.
 
-## 사용 가능한 훅 이벤트
+## 핵심 철학
 
-| 이벤트 | 설명 | 용도 |
+> **"모든 출력물은 다른 에이전트의 검증을 거쳐야 한다"**
+>
+> 코드든 계획이든, 한 에이전트가 만든 결과물은 반드시 다른 에이전트가 검증합니다.
+> 이를 통해 품질을 보장하고, 실수를 줄이며, 더 나은 결과물을 만듭니다.
+
+## 디렉토리 구조
+
+```
+hooks/
+├── orchestrator/           # 오케스트레이션 핵심 훅
+│   ├── keyword-detector.js # 키워드 감지 및 모드 활성화
+│   └── stop-orchestrator.js# 세션 종료 통합 관리
+├── pipeline/               # 자가 검증 파이프라인
+│   └── tracker.js          # 출력물 및 검증 상태 추적
+├── monitoring/             # 모니터링
+│   ├── agent-logger.js     # 에이전트 사용 로깅
+│   └── context-monitor.js  # 컨텍스트 윈도우 모니터링
+├── quality/                # 품질 관리
+│   ├── auto-format.js      # 자동 코드 포맷팅
+│   ├── pre-commit-test.js  # 커밋 전 테스트 실행
+│   └── edit-recovery.js    # Edit 에러 복구 힌트
+└── utils/                  # 유틸리티
+    ├── rules-injector.js   # 프로젝트 규칙 자동 주입
+    ├── readme-reminder.js  # README 업데이트 리마인더
+    ├── agent-reminder.js   # 에이전트 위임 리마인더
+    └── empty-response.js   # 빈 응답 감지
+```
+
+## 훅 상세 설명
+
+### 🎭 orchestrator/ (오케스트레이션)
+
+#### keyword-detector.js
+**이벤트**: `UserPromptSubmit`
+
+사용자 입력에서 매직 키워드를 감지하고 해당 모드를 활성화합니다.
+
+| 키워드 | 모드 | 동작 |
 |--------|------|------|
-| `PreToolUse` | 도구 실행 전 | 입력 검증, 실행 차단 |
-| `PostToolUse` | 도구 실행 후 | 출력 가공, 로깅 |
-| `UserPromptSubmit` | 사용자 프롬프트 제출 시 | 컨텍스트 주입 |
-| `Stop` | 세션 종료 시 | 정리 작업 |
+| `ultrawork`, `ulw` | 울트라워크 | 병렬 에이전트 오케스트레이션 활성화 |
+| `search`, `find` | 검색 | 병렬 검색 모드 활성화 |
+| `analyze`, `debug` | 분석 | 심층 분석 모드 활성화 |
+| `plan`, `roadmap` | 계획 | 전략적 계획 모드 활성화 |
+| `review`, `check` | 검토 | 비평적 검토 모드 활성화 |
+
+#### stop-orchestrator.js
+**이벤트**: `Stop`
+
+세션 종료 시 실행되며 3가지 검사를 통합 관리합니다:
+
+1. **Ralph Loop**: TODO가 완료될 때까지 자동 반복 (`RALPH_ENABLED=true`)
+2. **Self-Verification**: 출력물이 검증되었는지 확인
+3. **Verification Warnings**: 미완료 작업 경고 (비차단)
+
+```
+세션 종료 시도
+    ↓
+[Ralph Loop] TODO 완료 체크
+    ↓
+[Self-Verification] 검증 에이전트 호출 여부 체크
+    ↓
+[Warnings] 미완료 작업 경고
+    ↓
+세션 종료 허용/차단
+```
+
+### 🔄 pipeline/ (자가 검증 파이프라인)
+
+#### tracker.js
+**이벤트**: `PostToolUse` (Edit, Write, Task)
+
+출력물과 검증 상태를 추적합니다:
+
+- **코드 수정 추적**: Edit/Write로 코드 파일 수정 시 기록
+- **계획 수정 추적**: 계획 파일 수정 시 기록
+- **검증 에이전트 추적**: heimdall, loki 등 검증 에이전트 호출 시 기록
+
+검증 에이전트 목록:
+- 코드 검증: `heimdall` (code-reviewer), `tyr` (test-writer)
+- 계획 검증: `loki` (plan-reviewer), `odin` (oracle)
+
+### 📊 monitoring/ (모니터링)
+
+#### agent-logger.js
+**이벤트**: `PreToolUse`, `PostToolUse` (Task)
+
+모든 에이전트 호출을 로깅합니다:
+
+- UUID 기반 추적으로 병렬 에이전트 시간 측정 정확도 향상
+- 통계 집계 (호출 수, 평균 실행 시간)
+- 상세 로그 (전체 프롬프트 기록)
+
+로그 파일:
+- `~/.claude/agent-usage.log`: 간단한 로그
+- `~/.claude/agent-usage-stats.json`: 통계
+- `~/.claude/agent-usage-detailed.jsonl`: 상세 기록
+
+#### context-monitor.js
+**이벤트**: `PostToolUse` (all tools)
+
+컨텍스트 윈도우 사용량을 추적하고 임계값 도달 시 경고합니다.
+
+### ✨ quality/ (품질 관리)
+
+#### auto-format.js
+**이벤트**: `PostToolUse` (Edit, Write)
+
+파일 수정 후 자동으로 포맷터를 실행합니다:
+
+| 언어 | 포맷터 |
+|------|--------|
+| JS/TS | prettier, eslint --fix |
+| Python | black, ruff format |
+| Go | gofmt -w |
+| Rust | rustfmt |
+
+#### pre-commit-test.js
+**이벤트**: `PreToolUse` (Bash - git commit)
+
+git commit 실행 전 테스트를 자동으로 실행합니다.
+
+#### edit-recovery.js
+**이벤트**: `PostToolUse` (Edit)
+
+Edit 도구 에러 발생 시 복구 힌트를 제공합니다.
+
+### 🛠 utils/ (유틸리티)
+
+#### rules-injector.js
+**이벤트**: `UserPromptSubmit`
+
+프로젝트 규칙 파일을 자동으로 주입합니다.
+
+우선순위:
+1. `CLAUDE.md`
+2. `.claude/rules.md`
+3. `.cursorrules`
+
+#### readme-reminder.js
+**이벤트**: `PostToolUse` (Edit, Write)
+
+중요 파일 변경 시 README 업데이트를 리마인드합니다.
+
+#### agent-reminder.js
+**이벤트**: `PostToolUse` (Glob, Grep, Read, Edit)
+
+반복적인 탐색 작업 시 에이전트 위임을 권장합니다.
+
+#### empty-response.js
+**이벤트**: `PostToolUse` (Task)
+
+서브에이전트가 빈 응답을 반환했을 때 경고합니다.
+
+## 환경 변수
+
+| 변수 | 기본값 | 설명 |
+|------|--------|------|
+| `RALPH_ENABLED` | false | Ralph Loop 활성화 |
+| `RALPH_MAX_ITERATIONS` | 20 | 최대 반복 횟수 |
+| `RALPH_COMPLETION_MARKER` | COMPLETE | 완료 마커 |
+| `PIPELINE_SKIP` | false | 검증 파이프라인 스킵 |
+| `VERIFY_TODOS` | true | TODO 체크 활성화 |
+| `VERIFY_TESTS` | false | 테스트 실행 |
+| `VERIFY_BUILD` | false | 빌드 검증 |
+| `AGENT_REMINDER` | true | 에이전트 리마인더 활성화 |
+
+## 상태 파일
+
+| 파일 | 용도 |
+|------|------|
+| `~/.claude/pipeline-state.json` | 파이프라인 상태 (출력물, 검증) |
+| `~/.claude/ralph-state.json` | Ralph Loop 반복 상태 |
+| `~/.claude/agent-pending.json` | 진행 중인 에이전트 추적 |
+| `~/.claude/agent-usage-stats.json` | 에이전트 사용 통계 |
+| `~/.claude/context-state.json` | 컨텍스트 사용량 |
+
+## 자가 검증 흐름
+
+```
+코드 작성 (Edit/Write)
+       ↓
+[tracker.js] codeModified = true 기록
+       ↓
+세션 종료 시도
+       ↓
+[stop-orchestrator.js]
+  └─ 검증 에이전트(heimdall) 호출 여부 확인
+  └─ 미호출 시 → 세션 차단 🚫
+       ↓
+heimdall(code-reviewer) 실행
+       ↓
+[tracker.js] verificationStatus.heimdall = true
+       ↓
+세션 종료 시도
+       ↓
+[stop-orchestrator.js]
+  └─ 검증 완료 확인 ✓
+       ↓
+세션 종료 허용 ✅
+```
 
 ## 훅 설정 방법
 
@@ -18,132 +212,48 @@
 ```json
 {
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node hooks/orchestrator/keyword-detector.js" },
+          { "type": "command", "command": "node hooks/utils/rules-injector.js" }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "hooks": ["node hooks/pre-bash.js"]
+        "hooks": [{ "type": "command", "command": "node hooks/quality/pre-commit-test.js" }]
+      },
+      {
+        "matcher": "Task",
+        "hooks": [{ "type": "command", "command": "node hooks/monitoring/agent-logger.js" }]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Edit",
-        "hooks": ["node hooks/post-edit.js"]
+        "matcher": "Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "node hooks/quality/auto-format.js" },
+          { "type": "command", "command": "node hooks/quality/edit-recovery.js" }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|Task",
+        "hooks": [{ "type": "command", "command": "node hooks/pipeline/tracker.js" }]
+      },
+      {
+        "matcher": "Task",
+        "hooks": [{ "type": "command", "command": "node hooks/monitoring/agent-logger.js" }]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [{ "type": "command", "command": "node hooks/orchestrator/stop-orchestrator.js" }]
       }
     ]
   }
 }
-```
-
-## 포함된 훅
-
-### 1. 규칙 주입 (rules-injector.js) ⭐
-**이벤트**: UserPromptSubmit
-
-프로젝트 규칙 파일을 자동으로 컨텍스트에 주입
-
-지원 파일 (우선순위 순):
-- `CLAUDE.md`
-- `.claude/rules.md`
-- `.cursorrules` (Cursor 호환)
-- `.cursor/rules.md`
-
-### 2. 자동 포매팅 (auto-format.js) ⭐
-**이벤트**: PostToolUse (Edit, Write)
-
-Edit/Write 후 자동으로 코드 포매터 실행
-
-| 언어 | 포매터 |
-|------|--------|
-| JS/TS | prettier, eslint --fix |
-| Python | black, ruff |
-| Go | gofmt |
-| Rust | rustfmt |
-
-### 3. 세션 종료 검증 (stop-verify.js)
-**이벤트**: Stop
-
-세션 종료 시 자동 검증:
-- 미완료 TODO 체크
-- 테스트 실행 (환경변수 설정 시)
-- 빌드 검증 (환경변수 설정 시)
-
-```bash
-# 환경변수로 설정
-export VERIFY_TESTS=true
-export TEST_COMMAND="npm test"
-export VERIFY_BUILD=true
-export BUILD_COMMAND="npm run build"
-```
-
-### 4. README 리마인더 (readme-reminder.js) ⭐
-**이벤트**: PostToolUse (Edit, Write)
-
-주요 변경 시 README 업데이트 리마인드
-
-트리거 조건:
-- API/라우트 변경
-- 설정 파일 변경
-- 새 파일 생성
-- Docker/CI 설정 변경
-
-### 5. 주석 체크 (comment-checker.js)
-**이벤트**: PostToolUse (Edit)
-
-AI가 과도한 주석을 추가하지 않도록 검사
-
-### 6. 커밋 전 테스트 (pre-commit-test.js)
-**이벤트**: PreToolUse (Bash)
-
-git commit 명령 실행 전 테스트 자동 실행
-
-### 7. Edit 에러 복구 (edit-error-recovery.js)
-**이벤트**: PostToolUse (Edit)
-
-Edit 도구 에러 발생 시 복구 힌트 제공
-
-### 8. 빈 Task 응답 감지 (empty-task-response-detector.js)
-**이벤트**: PostToolUse (Task)
-
-서브에이전트가 빈 응답을 반환하면 경고
-
-### 9. 컨텍스트 윈도우 모니터 (context-window-monitor.js)
-**이벤트**: PostToolUse
-
-토큰 사용량을 추적하고 임계값 도달 시 알림
-
-### 10. 에이전트 사용 리마인더 (agent-usage-reminder.js)
-**이벤트**: PostToolUse
-
-반복적인 탐색 작업 시 에이전트 위임 리마인드
-
-### 11. Pipeline Tracker (pipeline-tracker.js) ⭐
-**이벤트**: PostToolUse (Edit, Write, Task)
-
-코드 파일 수정을 추적하고 파이프라인 에이전트 실행 상태를 기록
-
-추적 대상:
-- Edit/Write로 코드 파일(.js, .ts, .py 등) 수정 → `codeModified: true`
-- Task로 code-reviewer, test-writer, formatter 실행 → 해당 단계 완료
-
-### 12. Pipeline Enforcer (pipeline-enforcer.js) ⭐
-**이벤트**: Stop
-
-코드가 수정되었으나 파이프라인이 완료되지 않으면 세션 종료 차단
-
-```bash
-# 건너뛰기 (비권장)
-set PIPELINE_SKIP=true
-```
-
-### 13. Ralph Loop (ralph-loop.js) ⭐
-**이벤트**: Stop
-
-Todo가 완료될 때까지 세션 종료를 차단하여 자동 반복 실행
-
-```bash
-# 활성화
-set RALPH_ENABLED=true
-set RALPH_MAX_ITERATIONS=20
 ```
 
 ## 훅 작성 규칙
@@ -151,7 +261,8 @@ set RALPH_MAX_ITERATIONS=20
 1. 훅은 stdin으로 JSON 데이터를 받음
 2. stdout으로 수정된 데이터 반환
 3. 종료 코드 0: 계속 진행
-4. 종료 코드 1: 작업 차단
+4. 종료 코드 2: 작업 차단 (block)
+5. 종료 코드 1: 에러
 
 ## 참고
 

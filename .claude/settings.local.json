@@ -24,17 +24,35 @@
       "Grep(**)",
       "Bash(bash:*)",
       "mcp__ast-grep__*",
-      "Bash(./install.sh)"
+      "Bash(./install.sh)",
+      "Bash(tree:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)"
     ]
   },
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\orchestrator\\keyword-detector.js\""
+          },
+          {
+            "type": "command",
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\utils\\rules-injector.js\""
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "node \"%USERPROFILE%\\.claude\\hooks\\pre-commit-test.js\""
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\quality\\pre-commit-test.js\""
           }
         ]
       },
@@ -43,17 +61,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"%USERPROFILE%\\.claude\\hooks\\agent-usage-logger-pre.js\""
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"%USERPROFILE%\\.claude\\hooks\\rules-injector.js\""
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\monitoring\\agent-logger.js\""
           }
         ]
       }
@@ -64,15 +72,15 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"%USERPROFILE%\\.claude\\hooks\\auto-format.js\""
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\quality\\auto-format.js\""
           },
           {
             "type": "command",
-            "command": "node \"%USERPROFILE%\\.claude\\hooks\\readme-reminder.js\""
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\utils\\readme-reminder.js\""
           },
           {
             "type": "command",
-            "command": "node \"%USERPROFILE%\\.claude\\hooks\\edit-error-recovery.js\""
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\quality\\edit-recovery.js\""
           }
         ]
       },
@@ -81,11 +89,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"%USERPROFILE%\\.claude\\hooks\\empty-task-response-detector.js\""
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\utils\\empty-response.js\""
           },
           {
             "type": "command",
-            "command": "node \"%USERPROFILE%\\.claude\\hooks\\agent-usage-logger.js\""
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\monitoring\\agent-logger.js\""
           }
         ]
       },
@@ -94,7 +102,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"%USERPROFILE%\\.claude\\hooks\\pipeline-tracker.js\""
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\pipeline\\tracker.js\""
           }
         ]
       },
@@ -103,11 +111,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"%USERPROFILE%\\.claude\\hooks\\context-window-monitor.js\""
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\monitoring\\context-monitor.js\""
           },
           {
             "type": "command",
-            "command": "node \"%USERPROFILE%\\.claude\\hooks\\agent-usage-reminder.js\""
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\utils\\agent-reminder.js\""
           }
         ]
       }
@@ -117,15 +125,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"%USERPROFILE%\\.claude\\hooks\\pipeline-enforcer.js\""
-          },
-          {
-            "type": "command",
-            "command": "node \"%USERPROFILE%\\.claude\\hooks\\stop-verify.js\""
-          },
-          {
-            "type": "command",
-            "command": "node \"%USERPROFILE%\\.claude\\hooks\\ralph-loop.js\""
+            "command": "node \"%USERPROFILE%\\.claude\\hooks\\orchestrator\\stop-orchestrator.js\""
           }
         ]
       }
