@@ -28,7 +28,9 @@
       "Bash(tree:*)",
       "Bash(mkdir:*)",
       "Bash(cp:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(node -e \"\nconst fs = require\\(''fs''\\);\nconst path = ''C:/Users/USER/.claude/settings.json'';\nlet content = fs.readFileSync\\(path, ''utf8''\\);\ncontent = content.replace\\(/\"\"figma\"\": \\\\{\\\\s*\"\"command\"\": \"\"npx\"\"/g, ''\"\"figma\"\": {\\\\n      \"\"command\"\": \"\"cmd\"\"''\\);\nfs.writeFileSync\\(path, content\\);\nconsole.log\\(''Fixed figma command''\\);\n\")",
+      "Bash(node -e \"\nconst fs = require\\(''fs''\\);\nconst path = ''C:/Users/USER/.claude/settings.json'';\nlet content = fs.readFileSync\\(path, ''utf8''\\);\n\n// Fix paths: /c/Users/USER/ -> C:/Users/USER/\ncontent = content.replace\\(/\"\"\\\\/c\\\\/Users\\\\/USER\\\\//g, ''\"\"C:/Users/USER/''\\);\n\n// Fix figma command: npx with /c arg -> cmd with /c arg\nconst data = JSON.parse\\(content\\);\nif \\(data.mcpServers && data.mcpServers.figma\\) {\n  if \\(data.mcpServers.figma.command === ''npx'' && \n      data.mcpServers.figma.args && \n      data.mcpServers.figma.args[0] === ''/c''\\) {\n    data.mcpServers.figma.command = ''cmd'';\n  }\n}\n\nfs.writeFileSync\\(path, JSON.stringify\\(data, null, 2\\)\\);\nconsole.log\\(''Settings fixed successfully''\\);\n\")"
     ]
   },
   "hooks": {
