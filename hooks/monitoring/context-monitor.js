@@ -7,6 +7,9 @@
  * - Tracks tool result sizes
  * - Estimates cumulative tokens and warns
  * - Warning messages when thresholds are reached
+ *
+ * Environment variables:
+ * - CONTEXT_MONITOR=false: Disable monitoring
  */
 
 const readline = require('readline');
@@ -46,11 +49,8 @@ function loadState() {
 }
 
 function saveState(state) {
-  try {
-    fs.writeFileSync(CONFIG.stateFile, JSON.stringify(state, null, 2));
-  } catch (e) {
-    // ignore
-  }
+  // Async write (fire-and-forget) for better performance
+  fs.writeFile(CONFIG.stateFile, JSON.stringify(state, null, 2), () => {});
 }
 
 async function main() {
@@ -67,6 +67,13 @@ async function main() {
 
   try {
     const data = JSON.parse(input);
+
+    // Skip monitoring if disabled via environment variable
+    if (process.env.CONTEXT_MONITOR === 'false') {
+      console.log(JSON.stringify(data));
+      return;
+    }
+
     const state = loadState();
 
     // Reset if more than 5 minutes elapsed (consider as new session)

@@ -7,6 +7,9 @@
  * - Code changes → tracked, requires heimdall (code-reviewer) verification
  * - Plan creation → tracked, requires loki (plan-reviewer) verification
  * - Verification agents → tracked to mark verification complete
+ *
+ * Environment variables:
+ * - PIPELINE_TRACKER=false: Disable tracking
  */
 
 const readline = require('readline');
@@ -38,6 +41,10 @@ function loadState() {
       if (Date.now() - state.lastModified > 60 * 60 * 1000) {
         return createFreshState();
       }
+      // Reset if working directory changed (cross-repo issue fix)
+      if (state.workingDirectory && state.workingDirectory !== process.cwd()) {
+        return createFreshState();
+      }
       return state;
     }
   } catch (e) { /* ignore */ }
@@ -46,6 +53,7 @@ function loadState() {
 
 function createFreshState() {
   return {
+    workingDirectory: process.cwd(),  // Track working directory
     codeModified: false,
     planCreated: false,
     filesModified: [],
@@ -69,14 +77,13 @@ function createFreshState() {
 }
 
 function saveState(state) {
-  try {
-    state.lastModified = Date.now();
-    const dir = path.dirname(CONFIG.stateFile);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(CONFIG.stateFile, JSON.stringify(state, null, 2));
-  } catch (e) { /* ignore */ }
+  // Async write (fire-and-forget) for better performance
+  state.lastModified = Date.now();
+  const dir = path.dirname(CONFIG.stateFile);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  fs.writeFile(CONFIG.stateFile, JSON.stringify(state, null, 2), () => {});
 }
 
 function isCodeFile(filePath) {
@@ -114,6 +121,13 @@ async function main() {
 
   try {
     const data = JSON.parse(input);
+
+    // Skip tracking if disabled via environment variable
+    if (process.env.PIPELINE_TRACKER === 'false') {
+      console.log(JSON.stringify(data));
+      return;
+    }
+
     const state = loadState();
     let stateChanged = false;
 

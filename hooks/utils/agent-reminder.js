@@ -59,11 +59,8 @@ function loadState() {
 }
 
 function saveState(state) {
-  try {
-    fs.writeFileSync(CONFIG.stateFile, JSON.stringify(state, null, 2));
-  } catch (e) {
-    // ignore
-  }
+  // Async write (fire-and-forget) for better performance
+  fs.writeFile(CONFIG.stateFile, JSON.stringify(state, null, 2), () => {});
 }
 
 function categorizeToolUse(toolName) {

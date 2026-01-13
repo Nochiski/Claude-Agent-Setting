@@ -8,12 +8,18 @@
  * - Python: black, ruff
  * - Go: gofmt
  * - Rust: rustfmt
+ *
+ * Environment variables:
+ * - AUTO_FORMAT=false: Disable auto formatting
  */
 
 const { execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const readline = require('readline');
+
+// Command existence cache (persists for process lifetime)
+const commandCache = {};
 
 // Formatter settings by file extension
 const FORMATTERS = {
@@ -36,17 +42,27 @@ function getFormatters(filePath) {
 }
 
 function commandExists(cmd) {
+  // Return cached result if available
+  if (cmd in commandCache) {
+    return commandCache[cmd];
+  }
+
+  let exists = false;
   try {
     execSync(`where ${cmd}`, { stdio: 'ignore' });
-    return true;
+    exists = true;
   } catch {
     try {
       execSync(`which ${cmd}`, { stdio: 'ignore' });
-      return true;
+      exists = true;
     } catch {
-      return false;
+      exists = false;
     }
   }
+
+  // Cache the result
+  commandCache[cmd] = exists;
+  return exists;
 }
 
 function runFormatter(formatter, filePath) {
@@ -59,7 +75,7 @@ function runFormatter(formatter, filePath) {
   try {
     execSync(`${formatter} "${filePath}"`, {
       stdio: 'ignore',
-      timeout: 10000
+      timeout: 3000  // Reduced from 10s to 3s for faster feedback
     });
     return true;
   } catch (e) {
@@ -81,6 +97,12 @@ async function main() {
 
   try {
     const data = JSON.parse(input);
+
+    // Skip formatting if disabled via environment variable
+    if (process.env.AUTO_FORMAT === 'false') {
+      console.log(JSON.stringify(data));
+      return;
+    }
 
     // Only process Edit or Write tools
     if (data.tool_name === 'Edit' || data.tool_name === 'Write') {

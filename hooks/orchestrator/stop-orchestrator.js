@@ -241,6 +241,12 @@ function handlePipelineEnforcer() {
     return { blocked: false };
   }
 
+  // Check if working directory changed (cross-repo issue fix)
+  if (state.workingDirectory && state.workingDirectory !== process.cwd()) {
+    resetPipelineState();
+    return { blocked: false };
+  }
+
   // Stale state check (more than 1 hour)
   if (Date.now() - state.lastModified > 60 * 60 * 1000) {
     resetPipelineState();
